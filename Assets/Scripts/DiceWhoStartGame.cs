@@ -80,7 +80,7 @@ public class DiceWhoStartGame : MonoBehaviour
         finalSide = randomDiceSide + 1;
 
         // Show final dice value in Console
-        Debug.Log(finalSide);
+        Debug.Log("dice "+finalSide);
         DidntFinishRolling = false;
         if (Player1Roll){
             if (IsTie){

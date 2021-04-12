@@ -6,6 +6,7 @@ using UnityEngine;
 public class Triangle : MonoBehaviour
 {
     public int TriangleIndex;
+
     [SerializeField]
     Vector3 firstLocation;
     const int LocationMaxPlayers = 15;
@@ -16,8 +17,7 @@ public class Triangle : MonoBehaviour
     [SerializeField]
     GameManger gameManger;
 
-
-    int MovementToDecarse;
+    int MovementToDecrease;
     string OppisteType;
     int x;
     void Start()
@@ -25,33 +25,27 @@ public class Triangle : MonoBehaviour
         location = new Vector3[LocationMaxPlayers];
         int indexStart = 0;
         int i;
-        for (int J = 1; J <= 3; J++)
-        {
-            for (i = indexStart; i < LocationMaxPlayers - (3 - J) * 5; i++)
-            {
+        for (int J = 1; J <= 3; J++){
+            for (i = indexStart; i < LocationMaxPlayers - (3 - J) * 5; i++){
                 if (i == 0)
-                {
                     location[0] = firstLocation;
-                }
-                else
-                {
-                    print(i + ", " + J);
-                    // fix that 
-                    location[i] = location[0] + ((i % 5) * new Vector3(0, 0, 1.25f)) + (J - 1) * (new Vector3(0, 1.25f, 0));
+                else{
+                    if(TriangleIndex < 12)
+                        location[i] = location[0] + ((i % 5) * new Vector3(0, 0, 1.25f)) + (J - 1) * (new Vector3(0, 1.25f, 0));
+                    else
+                        location[i] = location[0] - ((i % 5) * new Vector3(0, 0, 1.25f)) + (J - 1) * (new Vector3(0, 1.25f, 0));
                 }
             }
             indexStart = i;
         }
     }
-
-    public void ShowMovementAfterDice(bool moveByOtherDice, int dice)
-    {
-        /* after the movement according to first/second dice, 
-        update the next location the paritcipent can jump to, according to the other dice. */
+    /* after the movement according to first/second dice, 
+       update the next location the paritcipent can jump to, according to the other dice. */
+    public void ShowMovementAfterDice(bool moveByOtherDice, int dice){
         gameManger.indexCountMove++;
         gameManger.HideAllTriangles();
         if (!moveByOtherDice)
-        {     // if the player didn't move the player according to second dice
+        {     
             if (OnSelected.SelectedPlayer.PlayerType == "Black") {
                 OppisteType = "White";
                 x = TriangleIndex + gameManger.dices[dice].diceCount;
@@ -89,148 +83,192 @@ public class Triangle : MonoBehaviour
             }
         }
     }
+    public void OnMouseDown(){
+        if (DidClickOnTriangle()) { 
+            // check if we have Trapped stones
+            if (CheckTrappedTypePlayerStones())
+                UpdateMoventDiceNormalSituation();
+            else{ // there is something in OnPlayerBlack / onPlayerWhite array (Trapped stones)
+                JumpOnOppositeStone(); // check if the participent jump on oppoise stone on the board
 
-    public void OnClickEnterFromTrappedArray()
-    {
-
-    }
-
-    public void DoubleLastStep()
-    {
-        GameManger.moveByFirstDice = true;
-        GameManger.moveBySecondDice = true;
-        gameManger.canPut = -1;
-        gameManger.canPut2 = -1;
-    }
-    public void OnMouseDown()
-    {
-        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit))
-        {
-            if (Input.GetMouseButton(0))
-            {
-                if (hit.collider.tag == "Triangle")
-                {
-                    // if the particpent click on a triangle, move the player to this location
-                    if (OnSelected.SelectedPlayer != null)
-                    {
-                        if ((GameManger.PlayerTurn == "Black" && gameManger.onPlayerBlack.Count == 0) ||
-                            (GameManger.PlayerTurn == "White" && gameManger.onPlayerWhite.Count == 0))
-                        {
-                            // using Math.Abs for not checking if the current player is white or black.
-                            MovementToDecarse = Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex);
-                            // if the particpent didn't move the players at his turn at all
-                            if (!GameManger.moveByFirstDice && !GameManger.moveBySecondDice)
-                            {
-                                if (gameManger.SumMovements.firstDice == MovementToDecarse)
-                                {
-                                    if ((gameManger.SumMovements.IsDouble && gameManger.indexCountMove < 4) || !gameManger.SumMovements.IsDouble)
-                                        ShowMovementAfterDice(GameManger.moveBySecondDice, 1);
-                                    if (!gameManger.SumMovements.IsDouble)
-                                    {
-                                        GameManger.moveByFirstDice = true;
-                                        gameManger.canPut = -1;
-                                    }
-                                    else if (gameManger.SumMovements.IsDouble && gameManger.indexCountMove == 4)
-                                    {
-                                        DoubleLastStep();
-                                        updateAfterFinishTurn();
-                                    }
-                                }
-                                else if (gameManger.SumMovements.secondDice == MovementToDecarse)
-                                {
-                                    if ((gameManger.SumMovements.IsDouble && gameManger.indexCountMove < 4) || !gameManger.SumMovements.IsDouble)
-                                        ShowMovementAfterDice(GameManger.moveByFirstDice, 0);
-                                    if (!gameManger.SumMovements.IsDouble)
-                                    {
-                                        GameManger.moveBySecondDice = true;
-                                        gameManger.canPut2 = -1;
-                                    }
-                                    else if (gameManger.SumMovements.IsDouble && gameManger.indexCountMove == 4)
-                                    {
-                                        DoubleLastStep();
-                                        updateAfterFinishTurn();
-                                    }
-                                }
-                            }
-                            else if (gameManger.SumMovements.secondDice == MovementToDecarse && GameManger.moveByFirstDice && !GameManger.moveBySecondDice)
-                            {
-                                if (!gameManger.SumMovements.IsDouble)
-                                {
-                                    updateAfterFinishTurn();
-                                    gameManger.canPut2 = -1;
-                                    GameManger.moveBySecondDice = true;
-                                }
-                            }
-                            else if (gameManger.SumMovements.firstDice == MovementToDecarse && GameManger.moveBySecondDice && !GameManger.moveByFirstDice)
-                            {
-                                if (!gameManger.SumMovements.IsDouble)
-                                {
-                                    updateAfterFinishTurn();
-                                    GameManger.moveByFirstDice = true;
-                                    gameManger.canPut = -1;
-                                }
-                            }
-
-                            JumpOnOppositeStone();
-                            gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Pop(); // remove from current stack
-                            /* if there is a player in the gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1],
-                             than addComponent OnSelected */
-                            if (gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count >= 1)
-                                if (!gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Peek().gameObject.GetComponent<OnSelected>())
-                                    gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Peek().gameObject.AddComponent<OnSelected>();
-                            OnSelected.SelectedPlayer.indexTriangle = TriangleIndex; // get the new Triangle that got selected
-                            gameManger.BoardGame[TriangleIndex - 1].Push(OnSelected.SelectedPlayer); // update in the new stack
-                            OnSelected.SelectedPlayer.transform.localPosition = location[gameManger.BoardGame[TriangleIndex - 1].Count - 1]; // update on board - visual
-                        }
-                        else
-                        {
-                            OnSelected.OnChosingMove -= gameManger.ChangeColorToCurrentPlayer;
-                            // there is something in OnPlayerBlack / onPlayerWhite
-
-                            JumpOnOppositeStone();
-
-                            List<Player> currentList;
-                            if (GameManger.PlayerTurn == "Black")
-                                currentList = gameManger.onPlayerBlack;
-                            else
-                                currentList = gameManger.onPlayerWhite;
-
-                            OnSelected.SelectedPlayer.indexTriangle = TriangleIndex;
-                            SearchCurrentTrappedStone(currentList); // remove from Trapped stones array
-                            gameManger.BoardGame[TriangleIndex - 1].Push(OnSelected.SelectedPlayer); // add to board game
-                            OnSelected.SelectedPlayer.transform.localPosition = location[gameManger.BoardGame[TriangleIndex - 1].Count - 1]; // update on board - visual
-
-                            if ((gameManger.SumMovements.IsDouble && gameManger.indexCountMove < 4) || !gameManger.SumMovements.IsDouble){
-                                if (TriangleIndex == gameManger.dices[0].diceCount)
-                                    ShowMovementAfterDice(GameManger.moveByFirstDice, 0);
-                                else
-                                    ShowMovementAfterDice(GameManger.moveBySecondDice, 1);
-                            }
-                            if (!gameManger.SumMovements.IsDouble)
-                            {
-                                if (TriangleIndex == gameManger.dices[0].diceCount){
-                                    GameManger.moveByFirstDice = true;
-                                    gameManger.canPut = -1;
-                                }else{
-                                    GameManger.moveBySecondDice = true;
-                                    gameManger.canPut2 = -1;
-                                }
-                            }
-                            else if (gameManger.SumMovements.IsDouble && gameManger.indexCountMove == 4)
-                            {
-                                DoubleLastStep();
-                                updateAfterFinishTurn();
-                            }
-                        }
-                    }
-                }
+                List<Player> currentList = GetCurrentListAccordingToTurn(); // get current trapped stones Array according to turn's current player
+                OnSelected.SelectedPlayer.indexTriangle = TriangleIndex;
+                UpdateOnBoardRemoveFromTrapped(currentList);
+                // after remove the current trapped stone - check if there is more trapped stones from the current TypePlayer
+                if (currentList.Count == 0)
+                    UpdateMoventOnlyOneTrapped();
+                else
+                    UpdateMovementMoreThanOneTrapped();
             }
         }
     }
-    public void SearchCurrentTrappedStone(List<Player> listTrapped)
+            
+        
+    
+    /*the function return true if the participent click on triangle for moving his current stone , else didn't click and return false*/
+    public bool DidClickOnTriangle() {
+        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out hit)) {
+            if (Input.GetMouseButton(0)){
+                if (hit.collider.tag == "Triangle") {
+                    // if the particpent click on a triangle, move the player to this location
+                    if (OnSelected.SelectedPlayer != null)
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public void UpdateMoventOnlyOneTrapped()
     {
-        // remove the current player selected forom onPlayerBlack / onPlayerWhite - trapped stones
+        gameManger.CanMoveStonesOnBoard = true;
+        UpdateRollingOnRelocateTrappedStones();
+        gameManger.indexCountMove++;
+    }
+
+    public void UpdateMovementMoreThanOneTrapped()
+    {
+        // there is more trapped stones
+        /*We don't want to allow selecting stones in the board, only TrappedStones*/
+        if (TriangleIndex == gameManger.dices[0].diceCount ||
+            TriangleIndex == gameManger.dices[1].diceCount ||
+            GameManger.BOARD_TRIANGLES - TriangleIndex + 1 == gameManger.dices[0].diceCount ||
+            GameManger.BOARD_TRIANGLES - TriangleIndex + 1 == gameManger.dices[1].diceCount){
+            // remove the option to move the selected object beacuse we have to enter all trapped stones before starting moving the stones that already on the board
+            if (OnSelected.SelectedPlayer.GetComponent<OnSelected>())
+                Destroy(OnSelected.SelectedPlayer.GetComponent<OnSelected>());
+
+            gameManger.CanMoveStonesOnBoard = false;
+            UpdateRollingOnRelocateTrappedStones(); // canMoveStonesOnBoard prevent from showing triangles and will only show the participent the option to located the trapped stones 
+            gameManger.indexCountMove++;
+            gameManger.HideAllTriangles();
+        }
+    }
+
+    /*Normal situation - we dont have trapped stones, update the movement of the stone*/
+    public void UpdateMoventDiceNormalSituation()
+    {
+        // using Math.Abs for not checking if the current player is white or black.
+        MovementToDecrease = Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex);
+
+        gameManger.CanMoveStonesOnBoard = true;
+        UpdateRolling(MovementToDecrease);
+        JumpOnOppositeStone(); // check if the participent jump on oppoise stone on the board
+
+        gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Pop(); // remove from current stack
+
+        UpdateOnSelectedOptionOnStone();
+        UpdatePropertiesAfterMovement();
+    }
+
+    /* if there is a player in the gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1] now after removing ,than addComponent OnSelected */
+    public void UpdateOnSelectedOptionOnStone()
+    {
+        if (gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count >= 1){
+            if (!gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Peek().gameObject.GetComponent<OnSelected>())
+                gameManger.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Peek().gameObject.AddComponent<OnSelected>();
+        }
+    }
+
+    public void UpdateRollingOnRelocateTrappedStones()
+    {
+        if (GameManger.PlayerTurn == "Black")
+            UpdateRolling(TriangleIndex);
+        else
+            UpdateRolling(GameManger.BOARD_TRIANGLES - TriangleIndex + 1);
+    }
+
+    public void UpdatePropertiesAfterMovement()
+    {
+        // update new Properties - triangleIndex, at BoardGame array and visual on Unity
+        OnSelected.SelectedPlayer.indexTriangle = TriangleIndex;
+        gameManger.BoardGame[TriangleIndex - 1].Push(OnSelected.SelectedPlayer);
+        OnSelected.SelectedPlayer.transform.localPosition = location[gameManger.BoardGame[TriangleIndex - 1].Count - 1];
+    }
+
+    public void UpdateOnBoardRemoveFromTrapped(List <Player> currentList){
+        SearchCurrentTrappedStone(currentList); // remove from Trapped stones array
+
+        // black player put on 0-5 , white player pn 23 - 18 (TriangleIndex)
+            gameManger.BoardGame[TriangleIndex - 1].Push(OnSelected.SelectedPlayer); // add to board game
+            OnSelected.SelectedPlayer.transform.localPosition = location[gameManger.BoardGame[TriangleIndex - 1].Count - 1]; // update on board - visual
+        
+    }
+
+    public List<Player> GetCurrentListAccordingToTurn(){
+        // this func return the currentListTrapped stones according to currrent TypePlayer
+        List<Player> currentList;
+        if (GameManger.PlayerTurn == "Black")
+            currentList = gameManger.onPlayerBlack;
+        else
+            currentList = gameManger.onPlayerWhite;
+        return currentList;
+    }
+
+    public void UpdateRolling(int MovementToDecrease)
+    {
+        if (!gameManger.SumMovements.IsDouble && gameManger.CanMoveStonesOnBoard)
+        {
+            if (!GameManger.moveByFirstDice)
+            {
+                // if the player chose to move according to first dice
+                if (gameManger.SumMovements.firstDice == MovementToDecrease)
+                {
+                    ShowMovementAfterDice(GameManger.moveBySecondDice, 1);
+                    GameManger.moveByFirstDice = true;
+                    gameManger.canPut = -1;
+
+                }
+            }
+             if (!GameManger.moveBySecondDice)
+            {
+                if (gameManger.SumMovements.secondDice == MovementToDecrease)
+                {
+                    ShowMovementAfterDice(GameManger.moveByFirstDice, 0);
+                    GameManger.moveBySecondDice = true;
+                    gameManger.canPut2 = -1;
+                }
+            }
+
+             if(GameManger.moveByFirstDice && GameManger.moveBySecondDice)
+                updateAfterFinishTurn();
+        }
+        // when the dices show double when indexCountMove is 4 than update that the participent rolled according to 2 dices twice. IndexCountMove respresnt count of moves for this current turn.
+        else if (gameManger.SumMovements.IsDouble && gameManger.CanMoveStonesOnBoard)
+        {
+            switch (gameManger.indexCountMove)
+            {
+                case 0:
+                    ShowMovementAfterDice(GameManger.moveBySecondDice, 0);
+                    GameManger.moveByFirstDice = true;
+                    gameManger.canPut = -1;
+                    break;
+                case 1:
+                    ShowMovementAfterDice(GameManger.moveByThirdDice, 0);
+                    GameManger.moveBySecondDice = true;
+                    gameManger.canPut2 = -1;
+                    break;
+                case 2:
+                    ShowMovementAfterDice(GameManger.moveByFourthDice, 0);
+                    GameManger.moveByThirdDice = true;
+                    gameManger.canPut3 = -1;
+                    break;
+                case 3:
+                    GameManger.moveByFourthDice = true;
+                    gameManger.canPut4 = -1;
+                    updateAfterFinishTurn();
+                    break;
+            }
+        }
+    }
+
+    public bool CheckTrappedTypePlayerStones(){
+        return (GameManger.PlayerTurn == "Black" && gameManger.onPlayerBlack.Count == 0) || (GameManger.PlayerTurn == "White" && gameManger.onPlayerWhite.Count == 0);
+    }
+
+    // remove the current player selected forom onPlayerBlack / onPlayerWhite - trapped stones
+    public void SearchCurrentTrappedStone(List<Player> listTrapped){
         foreach(Player p in listTrapped){
             if (p == OnSelected.SelectedPlayer) {
                 // search for the player in list that got clicked
@@ -241,23 +279,23 @@ public class Triangle : MonoBehaviour
         }
     }
 
-    public void JumpOnOppositeStone()
-    {
-        /*if you jump on one player that oppoise to your PlayerType - eat it and remove from board, add to OnPlayerBlack / onPlayerWhite array */
-                            if (gameManger.BoardGame[TriangleIndex - 1].Count == 1)
-        {
-            if (OnSelected.SelectedPlayer.PlayerType == "Black" && gameManger.BoardGame[TriangleIndex - 1].Peek().PlayerType == "White")
-            {
-                print(gameManger.Vector3ArrayTrappedBlackStones[gameManger.onPlayerBlack.Count]);
-                    gameManger.BoardGame[TriangleIndex - 1].Peek().gameObject.transform.localPosition = gameManger.Vector3ArrayTrappedBlackStones[gameManger.onPlayerWhite.Count];
-                    gameManger.onPlayerWhite.Add(gameManger.BoardGame[TriangleIndex - 1].Pop());
-            }
+    /*if you jump on one player that oppoise to your PlayerType - eat it and remove from board, add to OnPlayerBlack / onPlayerWhite array */
+    public void JumpOnOppositeStone(){
+        Stack<Player> removePlayer = null;
+        List<Player> currentTrappedList = null;
+        if (gameManger.BoardGame[TriangleIndex - 1].Count == 1){
+            if (OnSelected.SelectedPlayer.PlayerType == "Black" && gameManger.BoardGame[TriangleIndex - 1].Peek().PlayerType == "White") 
+                currentTrappedList = gameManger.onPlayerWhite;
             else if (OnSelected.SelectedPlayer.PlayerType == "White" && gameManger.BoardGame[TriangleIndex - 1].Peek().PlayerType == "Black")
-            {
-                print(gameManger.Vector3ArrayTrappedWhiteStones[gameManger.onPlayerWhite.Count]);
-                    gameManger.BoardGame[TriangleIndex - 1].Peek().gameObject.transform.localPosition = gameManger.Vector3ArrayTrappedWhiteStones[gameManger.onPlayerBlack.Count - 1];
-                    gameManger.onPlayerBlack.Add(gameManger.BoardGame[TriangleIndex - 1].Pop());
-                
+                currentTrappedList = gameManger.onPlayerBlack;        
+
+            if(currentTrappedList != null){
+                // save on variable the current stone that will get removed from board
+                removePlayer = gameManger.BoardGame[TriangleIndex - 1];
+
+                removePlayer.Peek().gameObject.transform.localPosition = gameManger.Vector3ArrayTrappedBlackStones[currentTrappedList.Count];
+                removePlayer.Peek().indexTriangle = 0; // reset indexTriangle
+                currentTrappedList.Add(removePlayer.Pop());
             }
         }
     }

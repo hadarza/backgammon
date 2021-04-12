@@ -17,13 +17,14 @@ public class Dice : MonoBehaviour
 	//Can Throw Dice
 	public bool isDiceLand = true;
 	public Transform diceCarrom;
-	#endregion
-	#region Private Variables
-	Ray ray;
+
+    #endregion
+    #region Private Variables
+    Ray ray;
 	RaycastHit hit;
-	#endregion
-	#region SerializeField Variables
-	[SerializeField]
+    #endregion
+    #region SerializeField Variables
+    [SerializeField]
 	GameManger gameManager;
 	#endregion
 
@@ -49,10 +50,14 @@ public class Dice : MonoBehaviour
 					// restart at rolling the dices again.
 					gameManager.canPut = 0;
 					gameManager.canPut2 = 0;
-					GameManger.moveByFirstDice = false;
+                    gameManager.canPut3= 0;
+                    gameManager.canPut4 = 0;
+                    GameManger.moveByFirstDice = false;
 					GameManger.moveBySecondDice = false;
-					
-					if (Input.GetMouseButtonUp(0)) {
+                    GameManger.moveByThirdDice = false;
+                    GameManger.moveByFourthDice = false;
+
+                    if (Input.GetMouseButtonUp(0)) {
 						initPos = dicePlayCam.ScreenToWorldPoint(initPos);
 
 						enableTheDice();
@@ -85,22 +90,47 @@ public class Dice : MonoBehaviour
 		}
 	}
 
-	void OnCollisionStay(Collision collision)
-	{
-		// if dice collide with the boardGame
-		if(collision.gameObject.tag == "Board"){
-			isDiceLand = true;
-			diceCount = 0;
-			// get dice count according to the angle of the vectors
-			diceCount = GetDiceCount();
-			for (int i = 0; i < orignalDice.Length; i++)
-			{
-				orignalDice[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-			}
-		}
-	}
+    public void OnCollisionEnter(Collision collision)
+    {
+        // if dice collide with the boardGame
+        if (collision.gameObject.tag == "Board"){
+            StartCoroutine(Wait3sec());
+        }
+    }
 
-	void OnEnable(){
+    IEnumerator Wait3sec()
+    {
+        yield return new WaitForSeconds(3f);
+        isDiceLand = true;
+        diceCount = 0;
+        // get dice count according to the angle of the vectors
+        diceCount = GetDiceCount();
+        for (int i = 0; i < orignalDice.Length; i++)
+        {
+            //			orignalDice[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        }
+        // check if there is an optional move, If not, show a message and pass turn
+        GameManger.Move m = gameManager.ThereIsOptionalMove();
+        //switch (gameManager.ThereIsOptionalMove())
+        //{
+        //    case GameManger.Move.NoPlayTurnPass:
+        //        gameManager.highestDice = 0;
+        //        gameManager.panelTurnpass.gameObject.SetActive(true);
+        //        // show a message on display to tell the player that the turn pass
+        //        gameManager.PassTurn();
+        //        break;
+        //    case GameManger.Move.PlayOneDice:
+        //        // check posibilty to step by the highest dice
+        //        gameManager.highestDice = Mathf.Max(gameManager.dices[0].diceCount, gameManager.dices[1].diceCount);
+        //        break;
+        //    case GameManger.Move.PlayTwoDice:
+        //        gameManager.highestDice = 0;
+        //        break;
+        //}
+        
+    }
+
+    void OnEnable(){
 		initPos = transform.position;
 	}
 	public int GetDiceCount(){

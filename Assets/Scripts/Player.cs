@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.GameCenter;
 
 public class Player : MonoBehaviour
 {
@@ -10,8 +9,12 @@ public class Player : MonoBehaviour
                              // index 0 - right bottom on the board.
     Ray ray;
     RaycastHit hit;
-    [SerializeField] GameManger gameManager;
+    GameManger gameManager;
 
+    private void Start()
+    {
+        gameManager = FindObjectOfType<GameManger>();
+    }
     private void OnMouseDown()
     {
         // only if both dices land , than I can select a player.
@@ -24,20 +27,22 @@ public class Player : MonoBehaviour
                     (GameManger.PlayerTurn == "White" && gameManager.onPlayerWhite.Count == 0)){
                         if (PlayerType == GameManger.PlayerTurn){
                             if (GameManger.LastSelected != gameObject){
-                                if (!gameObject.GetComponent<OnSelected>())
-                                    gameManager.EnableChosingPlayer();
+                                gameManager.EnableChosingPlayer(gameManager.BoardGame[indexTriangle-1]);
                                 gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
                                 OnSelected.OnChosingMove += gameManager.ChangeColorToCurrentPlayer;
                                 OnSelected.OnChosingMove += gameManager.ShowWhereCanJumpTo;
                                 OnSelected.OnChosingMove += gameManager.ShowTriangleMovement;
-                            }
-                            else
-                            {
-                                GameManger.LastSelected.GetComponent<Renderer>().material = gameManager.NormalColor;
+                            }else {
+                                Renderer renderSelected = GameManger.LastSelected.GetComponent<Renderer>();
+                                Material[] materials = renderSelected.materials;
+
+                                Material normal = gameManager.NormalColor;
+                                Material[] mat = new Material[] { normal, materials[1] };
+                                renderSelected.materials = mat;
                                 // remove all listeners 
                                 GameManger.LastSelected = null;
                                 // hide the triangles , so after deselect, we won't see the triangles movements.
-                                gameManager.HideAllTriangles();
+                               gameManager.HideAllTriangles();
                             }
                         }
                     }
@@ -70,6 +75,4 @@ public class Player : MonoBehaviour
             }
         }
     }
-
-    
 }
