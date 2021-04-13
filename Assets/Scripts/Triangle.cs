@@ -5,17 +5,15 @@ using UnityEngine;
 
 public class Triangle : MonoBehaviour
 {
-    public int TriangleIndex;
-
     [SerializeField]
     Vector3 firstLocation;
+    [SerializeField]
+    GameManger gameManger;
     const int LocationMaxPlayers = 15;
+    public int TriangleIndex;
     public Vector3[] location; // array of Vector3 of the locations for players according the TriangleIndex.
     Ray ray;
     RaycastHit hit;
-
-    [SerializeField]
-    GameManger gameManger;
 
     int MovementToDecrease;
     string OppisteType;
@@ -30,7 +28,7 @@ public class Triangle : MonoBehaviour
                 if (i == 0)
                     location[0] = firstLocation;
                 else{
-                    if(TriangleIndex < 12)
+                    if(TriangleIndex < 13)
                         location[i] = location[0] + ((i % 5) * new Vector3(0, 0, 1.25f)) + (J - 1) * (new Vector3(0, 1.25f, 0));
                     else
                         location[i] = location[0] - ((i % 5) * new Vector3(0, 0, 1.25f)) + (J - 1) * (new Vector3(0, 1.25f, 0));
@@ -86,8 +84,9 @@ public class Triangle : MonoBehaviour
     public void OnMouseDown(){
         if (DidClickOnTriangle()) { 
             // check if we have Trapped stones
-            if (CheckTrappedTypePlayerStones())
+            if (CheckTrappedTypePlayerStones()){
                 UpdateMoventDiceNormalSituation();
+            }
             else{ // there is something in OnPlayerBlack / onPlayerWhite array (Trapped stones)
                 JumpOnOppositeStone(); // check if the participent jump on oppoise stone on the board
 
@@ -100,6 +99,7 @@ public class Triangle : MonoBehaviour
                 else
                     UpdateMovementMoreThanOneTrapped();
             }
+           
         }
     }
             
@@ -293,7 +293,8 @@ public class Triangle : MonoBehaviour
                 // save on variable the current stone that will get removed from board
                 removePlayer = gameManger.BoardGame[TriangleIndex - 1];
 
-                removePlayer.Peek().gameObject.transform.localPosition = gameManger.Vector3ArrayTrappedBlackStones[currentTrappedList.Count];
+                Vector3 [] currentVector3LocationForTrapped = currentTrappedList == gameManger.onPlayerBlack ? gameManger.Vector3ArrayTrappedBlackStones : gameManger.Vector3ArrayTrappedWhiteStones;
+                removePlayer.Peek().gameObject.transform.localPosition = currentVector3LocationForTrapped[currentTrappedList.Count];
                 removePlayer.Peek().indexTriangle = 0; // reset indexTriangle
                 currentTrappedList.Add(removePlayer.Pop());
             }

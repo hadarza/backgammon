@@ -79,15 +79,20 @@ public class GameManger : MonoBehaviour
 
     public Vector3 []  UpdateVector3ArrayTrappedStones(Vector3 [] stones)
     {
-        for (int row = 1; row <= 3; row++)
-        {
+        if(stones == Vector3ArrayTrappedBlackStones){
+        for (int row = 1; row <= 3; row++){
             for (int OnTop = 1; OnTop <= 5; OnTop++)
-            {
-                print(OnTop + (row - 1) * 5 - 1);
-                    stones[OnTop + (5 * (row - 1)) - 1] = stones[0] + new Vector3(0, 0, -1.5f) * (OnTop - 1) + (row - 1) * new Vector3(0, 0.65f, 0);
-            }
+                stones[OnTop + (5 * (row - 1)) - 1] = stones[0] + new Vector3(0, 0, -1.5f) * (OnTop - 1) + (row - 1) * new Vector3(0, 0.65f, 0);
         }
-        return stones;
+            return stones;
+        }else{
+            // Vector3ArrayTrappedWhiteStones
+             for (int row = 1; row <= 3; row++){
+                for (int OnTop = 1; OnTop <= 5; OnTop++)
+                    stones[OnTop + (5 * (row - 1)) - 1] = stones[0] + new Vector3(0, 0, 1.5f) * (OnTop - 1) + (row - 1) * new Vector3(0, 0.65f, 0);
+            }
+            return stones;
+        }
     }
 
     void PushStacksToBoard(){
@@ -374,65 +379,17 @@ public class GameManger : MonoBehaviour
         return false;
     }
 
-     public Move ThereIsOptionalMove()
-    {
-        //if (isAllPlayersCanRemoved(BoardGame, PlayerTurn))
-        //{
-        //    print("can be removed");
-        //}
-        //else {
-        // peek 
-        int highDice = Mathf.Max(dices[0].diceCount, dices[1].diceCount);
-            foreach (Stack<Player> p in BoardGame){
-                if (p.Count > 0)
-                {
-                    if (CheckCanPutThere(PlayerTurn == "Black" ? (p.Peek().indexTriangle + dices[0].diceCount) : (p.Peek().indexTriangle - dices[0].diceCount), PlayerTurn == "Black" ? "White" : "Black") != -1)
-                    {
-                        countMove++;
-                        player = p.Peek();
-                    }
+     public bool ThereIsOptionalMove(){
+        foreach (Stack<Player> p in BoardGame){
+            if (p.Count > 0){
+                if (CheckCanPutThere(PlayerTurn == "Black" ? (p.Peek().indexTriangle + dices[0].diceCount) : (p.Peek().indexTriangle - dices[0].diceCount), PlayerTurn == "Black" ? "White" : "Black") != -1
+                || CheckCanPutThere(PlayerTurn == "Black" ? (p.Peek().indexTriangle + dices[1].diceCount) : (p.Peek().indexTriangle - dices[1].diceCount), PlayerTurn == "Black" ? "White" : "Black") != -1){
+                    return true;
                 }
             }
-        if(countMove == 0){
-            // can't do any move with first dice
-            foreach (Stack<Player> p in BoardGame)
-            {
-                if (p.Count > 0) {
-                    if (p.Peek().PlayerType == PlayerTurn)
-                    {
-
-                        if (CheckCanPutThere(PlayerTurn == "Black" ? (p.Peek().indexTriangle + dices[1].diceCount) : (p.Peek().indexTriangle - dices[1].diceCount), PlayerTurn == "Black" ? "White" : "Black") != -1)
-                            countMove2++;
-                    }
-                }
-            }
-            if(countMove2 == 0)
-            {
-                move = Move.NoPlayTurnPass;
-                print("nothing can do pass turn");
-            }
-            if (countMove2 == 1)
-            {
-                if (highDice == dices[1].diceCount)
-                    print("must select this specific stone " + player);
-            }
-            else
-            {
-                // check again after movement stone
-            }
-
         }
-        else if(countMove == 1)
-        {
-            if (highDice == dices[0].diceCount)
-                print("must select this specific stone " + player);
-        }
-        else
-        {
-            // check again after movement stone
-        }
-
-        return move;
+        // can't do any moves - pass turn
+        return false;
     }
 
     //public int CountPossibleOptionsToDoHighestMove()

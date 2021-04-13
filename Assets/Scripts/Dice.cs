@@ -110,8 +110,10 @@ public class Dice : MonoBehaviour
             //			orignalDice[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
         }
         // check if there is an optional move, If not, show a message and pass turn
-        GameManger.Move m = gameManager.ThereIsOptionalMove();
+        bool d = gameManager.ThereIsOptionalMove();
+		print("this is "+d);
         //switch (gameManager.ThereIsOptionalMove())
+
         //{
         //    case GameManger.Move.NoPlayTurnPass:
         //        gameManager.highestDice = 0;
