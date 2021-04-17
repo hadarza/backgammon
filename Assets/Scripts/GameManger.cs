@@ -62,6 +62,7 @@ public class GameManger : MonoBehaviour
     public Sprite[] diceSides;
     public GameObject UIcurrentPlayer;
 
+    public GameObject[] textBlackWhite;
     private void Start()
     {
         diceSides = Resources.LoadAll<Sprite>("DiceSides/");

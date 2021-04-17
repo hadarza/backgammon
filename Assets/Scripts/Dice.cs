@@ -46,6 +46,10 @@ public class Dice : MonoBehaviour
                     if (Input.GetMouseButtonDown(0)) {
                         if (hit.collider.name == "dice" || hit.collider.name == "dice2")
                         {
+                            foreach (GameObject text in gameManager.textBlackWhite)
+                                text.SetActive(false);
+                            foreach (GameObject diceUI in gameManager.diceCountUI)
+                                diceUI.SetActive(false);
                             gameManager.indexCountMove = 0; //resart countMovemnts 
 
                             // restart at rolling the dices again.
@@ -106,7 +110,7 @@ public class Dice : MonoBehaviour
                     foreach (Dice d in gameManager.dices)
                         d.isDiceLand = true;
                     RollBtn.gameObject.SetActive(false);
-
+                    
                     break;
                 case 2:
                     startGame = -1;
@@ -115,6 +119,7 @@ public class Dice : MonoBehaviour
                     foreach (Dice d in gameManager.dices)
                         d.isDiceLand = true;
                     RollBtn.gameObject.SetActive(false);
+                   
                     break;
             }
             Instruction.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = TextToShow;
@@ -126,8 +131,11 @@ public class Dice : MonoBehaviour
     void ShowVisibleDiceUI()
     {
         // show visible UI for finding dice 
-        if (gameManager.dices[indexDice].diceCount >= 1)
+        if (gameManager.dices[indexDice].diceCount >= 1){
             gameManager.diceCountUI[indexDice].GetComponent<Image>().sprite = gameManager.diceSides[gameManager.dices[indexDice].diceCount - 1];
+            foreach (GameObject diceUI in gameManager.diceCountUI)
+                diceUI.SetActive(true);
+        }
     }
     
 
@@ -144,8 +152,8 @@ public class Dice : MonoBehaviour
     			orignalDice[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
         gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
         gameManager.UpdateBufferOfDices();
-
         
+
         // check if there is an optional move, If not, show a message and pass turn
         //  if (!gameManager.ThereIsOptionalMove())
         //    gameManager.panelTurnpass.SetActive(true);
