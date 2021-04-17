@@ -9,6 +9,8 @@ TagManager:
   - Triangle
   - Board
   - DicesPlayerStart
+  - Stone
+  - Rectangle
   layers:
   - Default
   - TransparentFX
