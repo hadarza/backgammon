@@ -377,6 +377,7 @@ public class GameManger : MonoBehaviour
         return false;
     }
 
+    //This function return true if there is an optional move on all board from TypeTurn, false if not.
     public bool ThereIsOptionalMove(){
         for (int indexBuffer = 0; indexBuffer < dicesCount.Length; indexBuffer++)
         {
@@ -422,16 +423,19 @@ public class GameManger : MonoBehaviour
         return countPossibleForHighestDice;
     }
 
+    //This function return the higher dice count from 2 dices
     public int GetHighDice(){
        return Mathf.Max(dices[0].diceCount, dices[1].diceCount);
 
     }
+
+    // This function return true if all stones from PlayerTurn can be removed , false if not.
     public bool isAllPlayersCanRemoved(List<Stack<Player>> playerList, string PlayerType)
     {
         if (PlayerType == "White"){
             foreach (Stack<Player> s in playerList){
                 if (s.Count > 0){
-                    if (s.Peek().indexTriangle > 7 && s.Peek().PlayerType == PlayerType)
+                    if (s.Peek().indexTriangle > 6 && s.Peek().PlayerType == PlayerType)
                         return false;
                 }
             }

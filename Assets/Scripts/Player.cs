@@ -39,16 +39,13 @@ public class Player : MonoBehaviour
                                     OnSelected.OnChosingMove += gameManager.ShowWhereCanJumpTo;
                                     OnSelected.OnChosingMove += gameManager.ShowTriangleMovement;
                                     PlayerRemoveStones();
+                                }else{
+                                    ChangeBackToNormal();
+                                    GameManger.LastSelected = null;
+                                    // hide the triangles , so after deselect, we won't see the triangles movements.
+                                    gameManager.HideAllTriangles();
                                 }
                             }
-                            else
-                            {
-                                ChangeBackToNormal();
-                                GameManger.LastSelected = null;
-                                // hide the triangles , so after deselect, we won't see the triangles movements.
-                                gameManager.HideAllTriangles();
-                            }
-
                         }
                         else
                         {
@@ -89,11 +86,15 @@ public class Player : MonoBehaviour
     public void PlayerRemoveStones()
     {
         if (gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn)){
-            foreach(Dice dice in gameManager.dices){
+            // can't use foreach , beacuse break doesn't work there.
+            for(int i=0;i<gameManager.dices.Length;i++){
                 if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count > 0){
                     // if you have at least one stone on the stack of countDice
-                    if (OnSelected.SelectedPlayer.indexTriangle == dice.diceCount || GameManger.BOARD_TRIANGLES - OnSelected.SelectedPlayer.indexTriangle == dice.diceCount)
+                    if (indexTriangle == gameManager.dices[i].diceCount || GameManger.BOARD_TRIANGLES - indexTriangle + 1 == gameManager.dices[i].diceCount)
+                    {
                         ToggleHideShowRectangle(true);
+                        break;
+                    }
                     else
                         ToggleHideShowRectangle(false);
                 }

@@ -31,6 +31,8 @@ public class rectangleTakeOutStones : MonoBehaviour
     public void OnMouseDown()
     {
         if (DidClickOnRectangle()){
+            // adding to list of stones that take out and remove from the board.
+            // also update visual - localPosition + rotation
             if (GameManger.PlayerTurn == "White"){
                 gameManager.WhiteStonesTakeOut.Add(OnSelected.SelectedPlayer);
                 OnSelected.SelectedPlayer.transform.localPosition = gameManager.Vector3TakeOutWhiteStones[gameManager.WhiteStonesTakeOut.Count - 1];
@@ -42,7 +44,26 @@ public class rectangleTakeOutStones : MonoBehaviour
             gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Pop(); // remove from current stack
             gameManager.HideAllTriangles();
             gameManager.indexCountMove++;
-            OnSelected.SelectedPlayer.indexTriangle = -1; // not on board anymore
+
+            // update DoneMove after movement out of board - remove stone
+            foreach(Dice d in gameManager.dices){
+                if (d.diceCount == OnSelected.SelectedPlayer.indexTriangle || d.diceCount == GameManger.BOARD_TRIANGLES - OnSelected.SelectedPlayer.indexTriangle + 1){
+                    if (!gameManager.SumMovements.IsDouble)
+                        gameManager.DoneMove[d.indexDice] = true;
+                    else{
+                        // if not double - look for DoneMove that isn't true beacue dices have the same val and so we can't do what we did on !IsDouble
+                        for (int i = 0; i <gameManager.DoneMove.Length;i++){
+                            if (!gameManager.DoneMove[i]){
+                                gameManager.DoneMove[i] = true;
+                                break; // get out of for
+                            }
+                        }
+                    }
+
+                }
+            }
+                OnSelected.SelectedPlayer.indexTriangle = -1; // not on board anymore
+                OnSelected.SelectedPlayer = null;
         }
     }
 }

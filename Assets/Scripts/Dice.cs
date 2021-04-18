@@ -13,6 +13,7 @@ public class Dice : MonoBehaviour
 	public int diceCount;
 	//Can Throw Dice
 	public bool isDiceLand = true;
+    public int indexDice;
 
     #endregion
     #region Private Variables
@@ -27,8 +28,6 @@ public class Dice : MonoBehaviour
     Button RollBtn;
     [SerializeField]
     RawImage Instruction;
-    [SerializeField]
-    int indexDice;
     
     #endregion
     void Start()
@@ -92,9 +91,9 @@ public class Dice : MonoBehaviour
     IEnumerator Wait()
     {
         yield return new WaitForSeconds(6f);
+        int startGame = gameManager.GetPlayerStartGame(gameManager.dices[0].diceCount, gameManager.dices[1].diceCount);
         if (GameManger.PlayerTurn == null)
         {
-            int startGame = gameManager.GetPlayerStartGame(gameManager.dices[0].diceCount, gameManager.dices[1].diceCount);
             switch (startGame)
             {
                 case 0:

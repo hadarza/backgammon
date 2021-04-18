@@ -296,6 +296,7 @@ public class Triangle : MonoBehaviour
                 case 3:
                     gameManager.DoneMove[3] = true;
                     gameManager.IndexPutAccordingToDice[3] = -1;
+                    gameManager.indexCountMove++;
                     updateAfterFinishTurn();
                     break;
             }
