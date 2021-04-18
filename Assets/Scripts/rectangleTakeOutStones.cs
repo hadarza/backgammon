@@ -33,14 +33,16 @@ public class rectangleTakeOutStones : MonoBehaviour
         if (DidClickOnRectangle()){
             if (GameManger.PlayerTurn == "White"){
                 gameManager.WhiteStonesTakeOut.Add(OnSelected.SelectedPlayer);
-                OnSelected.SelectedPlayer.transform.position = gameManager.Vector3TakeOutWhiteStones[gameManager.WhiteStonesTakeOut.Count - 1];
+                OnSelected.SelectedPlayer.transform.localPosition = gameManager.Vector3TakeOutWhiteStones[gameManager.WhiteStonesTakeOut.Count - 1];
             }else{
                 gameManager.BlackStonesTakeOut.Add(OnSelected.SelectedPlayer);
-                OnSelected.SelectedPlayer.transform.position = gameManager.Vector3TakeOutBlackStones[gameManager.BlackStonesTakeOut.Count - 1];
+                OnSelected.SelectedPlayer.transform.localPosition = gameManager.Vector3TakeOutBlackStones[gameManager.BlackStonesTakeOut.Count - 1];
             }
             OnSelected.SelectedPlayer.transform.rotation = Quaternion.Euler(new Vector3(270, 0, 0));
             gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Pop(); // remove from current stack
             gameManager.HideAllTriangles();
+            gameManager.indexCountMove++;
+            OnSelected.SelectedPlayer.indexTriangle = -1; // not on board anymore
         }
     }
 }

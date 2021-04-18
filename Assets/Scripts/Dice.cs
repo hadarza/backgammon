@@ -124,6 +124,10 @@ public class Dice : MonoBehaviour
             }
             Instruction.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = TextToShow;
             LeanTween.moveY(Instruction.gameObject, 900f, 1f);
+            foreach (GameObject text in gameManager.textBlackWhite)
+                text.SetActive(true);
+            foreach (GameObject diceUI in gameManager.diceCountUI)
+                diceUI.SetActive(true);
         }
         ShowVisibleDiceUI();
     }
@@ -149,7 +153,7 @@ public class Dice : MonoBehaviour
         // get dice count according to the angle of the vectors
         diceCount = GetDiceCount();
         for (int i = 0; i < orignalDice.Length; i++)
-    			orignalDice[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+    		//	orignalDice[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
         gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
         gameManager.UpdateBufferOfDices();
         

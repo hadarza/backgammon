@@ -32,6 +32,10 @@ public class RollingDice : MonoBehaviour
     }
     public void OnRollingDice()
     {
+        foreach (GameObject text in gameManger.textBlackWhite)
+            text.SetActive(false);
+        foreach (GameObject diceUI in gameManger.diceCountUI)
+            diceUI.SetActive(false);
         foreach (Dice d in gameManger.dices)
             d.isDiceLand = false;
         // set start position for both dices;
@@ -45,12 +49,15 @@ public class RollingDice : MonoBehaviour
                     break;
                 case "White":
                     dices[indexDice].transform.position = startPos[0]+ indexDice * new Vector3(3,0,0);
+                    print(dices[indexDice].transform.position);
                     force = new Vector3(40, 0, 300);
                     MoveDice(indexDice);
                     break;
                 case "Black":
                     dices[indexDice].transform.position = startPos[1] + indexDice * new Vector3(3, 0, 0);
+                    print(dices[indexDice].transform.position);
                     force = new Vector3(40, 0, -300);
+                    
                     MoveDice(indexDice);
                     break;
                 default:
@@ -63,6 +70,7 @@ public class RollingDice : MonoBehaviour
     public void MoveDice(int indexDice)
     {
         string currentPlayer;
+        print(force);
         dices[indexDice].GetComponent<Rigidbody>().AddForce(force);
         dices[indexDice].transform.Rotate(new Vector3(Random.Range(0f, 360f), Random.Range(0f, 360f), Random.Range(0f, 360f)));
         audioSource.PlayOneShot(rollingDice);
@@ -70,11 +78,11 @@ public class RollingDice : MonoBehaviour
         if (GameManger.PlayerTurn == null)
             RollBtn.gameObject.SetActive(false);
         else{
-            if (!gameManger.UIcurrentPlayer.activeInHierarchy) { }
             currentPlayer = GameManger.PlayerTurn == "Black" ? "שחור" : "לבן";
             gameManger.UIcurrentPlayer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = " תור שחקן: שחקן " + currentPlayer;
             Invoke("ShowUIcurrentPlayer", 1f);
         }
+
     }
     public void ShowUIcurrentPlayer()
     {

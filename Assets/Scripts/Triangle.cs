@@ -149,7 +149,6 @@ public class Triangle : MonoBehaviour
     {
         gameManager.CanMoveStonesOnBoard = true;
         UpdateRollingOnRelocateTrappedStones();
-        gameManager.indexCountMove++;
     }
 
     public void UpdateMovementMoreThanOneTrapped()
@@ -166,7 +165,6 @@ public class Triangle : MonoBehaviour
 
             gameManager.CanMoveStonesOnBoard = false;
             UpdateRollingOnRelocateTrappedStones(); // canMoveStonesOnBoard prevent from showing triangles and will only show the participent the option to located the trapped stones 
-            gameManager.indexCountMove++;
             gameManager.HideAllTriangles();
         }
     }
@@ -308,7 +306,7 @@ public class Triangle : MonoBehaviour
         return (GameManger.PlayerTurn == "Black" && gameManager.onPlayerBlack.Count == 0) || (GameManger.PlayerTurn == "White" && gameManager.onPlayerWhite.Count == 0);
     }
 
-    // remove the current player selected forom onPlayerBlack / onPlayerWhite - trapped stones
+    // remove the current player selected from onPlayerBlack / onPlayerWhite - trapped stones
     public void SearchCurrentTrappedStone(List<Player> listTrapped){
         foreach(Player p in listTrapped){
             if (p == OnSelected.SelectedPlayer) {
@@ -322,6 +320,7 @@ public class Triangle : MonoBehaviour
 
     /*if you jump on one player that oppoise to your PlayerType - eat it and remove from board, add to OnPlayerBlack / onPlayerWhite array */
     public void JumpOnOppositeStone(){
+        bool FoundThere = false;
         Stack<Player> removePlayer = null;
         List<Player> currentTrappedList = null;
         if (gameManager.BoardGame[TriangleIndex - 1].Count == 1){
@@ -333,9 +332,22 @@ public class Triangle : MonoBehaviour
             if(currentTrappedList != null){
                 // save on variable the current stone that will get removed from board
                 removePlayer = gameManager.BoardGame[TriangleIndex - 1];
-
                 Vector3 [] currentVector3LocationForTrapped = (currentTrappedList == gameManager.onPlayerBlack) ? gameManager.Vector3ArrayTrappedBlackStones : gameManager.Vector3ArrayTrappedWhiteStones;
-                removePlayer.Peek().gameObject.transform.localPosition = currentVector3LocationForTrapped[currentTrappedList.Count];
+                for(int j=0;j<currentVector3LocationForTrapped.Length;j++){
+                    FoundThere = false;
+                    for (int i = 0; i < currentTrappedList.Count; i++){
+                        // if already exist an object eith this location on TrappedList 
+                        if (currentTrappedList[i].transform.localPosition == currentVector3LocationForTrapped[j]){
+                            FoundThere = true;
+                            break;
+                        }
+                    }
+                    if (!FoundThere){
+                        removePlayer.Peek().gameObject.transform.localPosition = currentVector3LocationForTrapped[j];
+                        break;
+                    }
+                }
+
                 removePlayer.Peek().indexTriangle = 0; // reset indexTriangle
                 currentTrappedList.Add(removePlayer.Pop());
             }

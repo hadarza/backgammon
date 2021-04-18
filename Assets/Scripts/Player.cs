@@ -21,12 +21,16 @@ public class Player : MonoBehaviour
         // only if both dices land , than I can select a player.
         if (gameManager.IsBothDicesLandAndRoll() && gameManager.RollFirstTime) {
             ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit)) {
-                if (hit.collider.gameObject == gameObject) {
-                    if ((GameManger.PlayerTurn == "Black" && gameManager.onPlayerBlack.Count == 0) ||
-                    (GameManger.PlayerTurn == "White" && gameManager.onPlayerWhite.Count == 0)) {
-                        if (PlayerType == GameManger.PlayerTurn) {
-                            if (!gameManager.SumMovements.IsPlayerDidAllSteps())
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.gameObject == gameObject)
+                {
+                    if (!gameManager.SumMovements.IsPlayerDidAllSteps())
+                    {
+                        if ((GameManger.PlayerTurn == "Black" && gameManager.onPlayerBlack.Count == 0) ||
+                    (GameManger.PlayerTurn == "White" && gameManager.onPlayerWhite.Count == 0))
+                        {
+                            if (PlayerType == GameManger.PlayerTurn)
                             {
                                 if (GameManger.LastSelected != gameObject)
                                 {
@@ -44,22 +48,26 @@ public class Player : MonoBehaviour
                                 // hide the triangles , so after deselect, we won't see the triangles movements.
                                 gameManager.HideAllTriangles();
                             }
-                                
+
                         }
-                    }
-                    else {
-                        gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
-                        if (GameManger.LastSelected != gameObject)
-                            OnSelected.OnChosingMove += gameManager.ChangeColorToCurrentPlayer;
-                        List<Player> currentList;
-                        currentList = (PlayerType == "Black") ? gameManager.onPlayerBlack : gameManager.onPlayerWhite;
-                        if (currentList != null) {
-                            if (gameManager.IsPlayerFoundOnTrapped(currentList, this)) {
-                                foreach (Player p in currentList) {
-                                    if (!p.GetComponent<OnSelected>())
-                                        p.transform.gameObject.AddComponent<OnSelected>();
+                        else
+                        {
+                            gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
+                            if (GameManger.LastSelected != gameObject)
+                                OnSelected.OnChosingMove += gameManager.ChangeColorToCurrentPlayer;
+                            List<Player> currentList;
+                            currentList = (PlayerType == "Black") ? gameManager.onPlayerBlack : gameManager.onPlayerWhite;
+                            if (currentList != null)
+                            {
+                                if (gameManager.IsPlayerFoundOnTrapped(currentList, this))
+                                {
+                                    foreach (Player p in currentList)
+                                    {
+                                        if (!p.GetComponent<OnSelected>())
+                                            p.transform.gameObject.AddComponent<OnSelected>();
+                                    }
+                                    gameManager.changeLocationsToTrappedStones(currentList);
                                 }
-                                gameManager.changeLocationsToTrappedStones(currentList);
                             }
                         }
                     }
@@ -69,6 +77,7 @@ public class Player : MonoBehaviour
     }
     public void ChangeBackToNormal()
     {
+        print(GameManger.LastSelected);
         Renderer renderSelected = GameManger.LastSelected.GetComponent<Renderer>();
         Material[] materials = renderSelected.materials;
 
