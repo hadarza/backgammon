@@ -402,21 +402,18 @@ public class GameManger : MonoBehaviour
 
     public int CountPossibleOptionsToDoHighestMove()
     {
+        countPossibleForHighestDice = 0;
         int highestDice = GetHighDice();
-        Dice HighDice = highestDice == dices[0].diceCount ? dices[0] : dices[1];
-        foreach (Stack<Player> s in BoardGame)
-        {
-            if (s.Count > 0)
-            {
-                if (PlayerTurn == "Black")
-                {
-                    if (CheckCanPutThere(s.Peek().indexTriangle + highestDice, "White") != -1)
-                        countPossibleForHighestDice++;
-                }
-                else
-                {
-                    if (CheckCanPutThere(s.Peek().indexTriangle - highestDice, "Black") != -1)
-                        countPossibleForHighestDice++;
+        foreach (Stack<Player> s in BoardGame){
+            if (s.Count > 0){
+                if (s.Peek().PlayerType == PlayerTurn){
+                    if (PlayerTurn == "Black"){
+                        if (CheckCanPutThere(s.Peek().indexTriangle + highestDice, "White") != -1)
+                            countPossibleForHighestDice++;
+                    }else{
+                        if (CheckCanPutThere(s.Peek().indexTriangle - highestDice, "Black") != -1)
+                            countPossibleForHighestDice++;
+                    }
                 }
             }
         }

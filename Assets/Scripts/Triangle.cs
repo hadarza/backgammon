@@ -90,29 +90,29 @@ public class Triangle : MonoBehaviour
     public void OnMouseDown(){
         if (DidClickOnTriangle()) {
             // check if we have Trapped stones
-            if (CheckTrappedTypePlayerStones())
-            {
-      //          if (gameManager.CountPossibleOptionsToDoHighestMove() == 1)
-       //         {
-                    // if player chose to move according the other dice (if exists)
-       //             if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex))
-      //              {
-                        // did the other dice
-      //                  if (gameManager.CheckCanPutThere(TriangleIndex + gameManager.GetHighDice(), GameManger.PlayerTurn == "Black" ? "White" : "Black") != -1)
+            if (CheckTrappedTypePlayerStones()){
+                if (!gameManager.SumMovements.IsDouble) {
+                    if (gameManager.CountPossibleOptionsToDoHighestMove() == 1){
+                        // if player chose to move according the other dice (if exists)
+                        if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex)){
+                            // did the other dice
+                            if (gameManager.CheckCanPutThere(TriangleIndex + gameManager.GetHighDice(), GameManger.PlayerTurn == "Black" ? "White" : "Black") != -1)
+                                UpdateMoventDiceNormalSituation();
+                            else{
+                                // check if highest dice has already been doe. If so, don't show message must do high dice - not in double
+                                Dice HighDice = gameManager.GetHighDice() == gameManager.dices[0].diceCount ? gameManager.dices[0] : gameManager.dices[1];
+                                if (!gameManager.DoneMove[HighDice.indexDice])
+                                    print("must do high dice");
+                                else UpdateMoventDiceNormalSituation();
+                            }
+
+                        }
+                        else // choose to move according to the highest dice
                             UpdateMoventDiceNormalSituation();
-
-                //                  else
-                //                     print("must do high dice");
-                //             }
-                //             else
-                //             {
-                //                 UpdateMoventDiceNormalSituation();
-                //            }
-                //         }
-
-            }
-            else
-            { // there is something in OnPlayerBlack / onPlayerWhite array (Trapped stones)
+                    }
+                    else UpdateMoventDiceNormalSituation();
+                }else UpdateMoventDiceNormalSituation();
+            }else{ // there is something in OnPlayerBlack / onPlayerWhite array (Trapped stones)
                 JumpOnOppositeStone(); // check if the participent jump on oppoise stone on the board
 
                 List<Player> currentList = GetCurrentListAccordingToTurn(); // get current trapped stones Array according to turn's current player
@@ -189,7 +189,6 @@ public class Triangle : MonoBehaviour
             if (gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn))
             {
                 OnSelected.SelectedPlayer.PlayerRemoveStones();
-
             }
             else
             {
