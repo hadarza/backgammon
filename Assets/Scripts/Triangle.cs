@@ -100,7 +100,8 @@ public class Triangle : MonoBehaviour
                             // if player chose to move according the other dice
                             if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex)) {
                                 // did the other dice and can't do the second dice (the higher) after , than MessageNeedToPop = true;
-                                if ((GameManger.PlayerTurn == "Black" && gameManager.CheckCanPutThere(TriangleIndex + gameManager.GetHighDice(), "Black") == -1) || (GameManger.PlayerTurn == "White" && gameManager.CheckCanPutThere(TriangleIndex - gameManager.GetHighDice() + 1, "White") == -1))
+                                if ((GameManger.PlayerTurn == "Black" && gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle + Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) + gameManager.GetHighDice(), "Black") == -1) ||
+                                    (GameManger.PlayerTurn == "White" && gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle - Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) - gameManager.GetHighDice() + 1, "White") == -1))
                                     MessageNeedToPop = true;
                             }
                         }
