@@ -14,6 +14,7 @@ public class OnSelected : MonoBehaviour
         {
             SelectedPlayer = gameObject.GetComponent<Player>();
             OnChosingMove(SelectedPlayer);
+            SelectedPlayer.PlayerRemoveStones();
             print("on chosing move");
         }
     }

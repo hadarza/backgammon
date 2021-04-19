@@ -44,9 +44,10 @@ public class rectangleTakeOutStones : MonoBehaviour
             gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Pop(); // remove from current stack
             gameManager.HideAllTriangles();
             gameManager.indexCountMove++;
+            OnSelected.SelectedPlayer.ToggleHideShowRectangle(false); // hide triangle selected after moving a stone for there
 
             // update DoneMove after movement out of board - remove stone
-            foreach(Dice d in gameManager.dices){
+            foreach (Dice d in gameManager.dices){
                 if (d.diceCount == OnSelected.SelectedPlayer.indexTriangle || d.diceCount == GameManger.BOARD_TRIANGLES - OnSelected.SelectedPlayer.indexTriangle + 1){
                     if (!gameManager.SumMovements.IsDouble)
                         gameManager.DoneMove[d.indexDice] = true;

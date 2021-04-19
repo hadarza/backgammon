@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameManger : MonoBehaviour
 {
@@ -360,6 +361,7 @@ public class GameManger : MonoBehaviour
                 triangles[canPutInDice1 - 1].gameObject.SetActive(true);
             else
             {
+                panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין לך היכן להניח את האבנים הכלואות ולכן התור עובר ליריב";
                 panelTurnpass.gameObject.SetActive(true);
                 // show a message on display to tell the player that the turn pass
                 PassTurn();

@@ -38,7 +38,6 @@ public class Player : MonoBehaviour
                                     OnSelected.OnChosingMove += gameManager.ChangeColorToCurrentPlayer;
                                     OnSelected.OnChosingMove += gameManager.ShowWhereCanJumpTo;
                                     OnSelected.OnChosingMove += gameManager.ShowTriangleMovement;
-                                    PlayerRemoveStones();
                                 }else{
                                     ChangeBackToNormal();
                                     GameManger.LastSelected = null;
@@ -103,17 +102,13 @@ public class Player : MonoBehaviour
             }
         }
     }
+    // Toggle - show/hide Triangle for helping player where to click in order to remove stones from board
     public void ToggleHideShowRectangle(bool IsShown)
     {
         // if you have at least one stone on the stack of countDice
         if (GameManger.PlayerTurn == "Black")
-        {
             gameManager.RectanglesShowTakeOut[0].SetActive(IsShown);
-        }
         else
-        {
             gameManager.RectanglesShowTakeOut[1].SetActive(IsShown);
-        }
     }
-
 }

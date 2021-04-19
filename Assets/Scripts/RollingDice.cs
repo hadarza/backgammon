@@ -62,9 +62,7 @@ public class RollingDice : MonoBehaviour
                     break;
                 default:
                     break;
-            }
-          
-            
+            }            
         }
     }
     public void MoveDice(int indexDice)

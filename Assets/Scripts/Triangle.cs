@@ -88,31 +88,35 @@ public class Triangle : MonoBehaviour
     }
 
     public void OnMouseDown(){
+        bool MessageNeedToPop = false;
         if (DidClickOnTriangle()) {
             // check if we have Trapped stones
             if (CheckTrappedTypePlayerStones()){
                 if (!gameManager.SumMovements.IsDouble) {
                     if (gameManager.CountPossibleOptionsToDoHighestMove() == 1){
-                        // if player chose to move according the other dice (if exists)
-                        if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex)){
-                            // did the other dice
-                            if (gameManager.CheckCanPutThere(TriangleIndex + gameManager.GetHighDice(), GameManger.PlayerTurn == "Black" ? "White" : "Black") != -1)
-                                UpdateMoventDiceNormalSituation();
-                            else{
-                                // check if highest dice has already been doe. If so, don't show message must do high dice - not in double
-                                Dice HighDice = gameManager.GetHighDice() == gameManager.dices[0].diceCount ? gameManager.dices[0] : gameManager.dices[1];
-                                if (!gameManager.DoneMove[HighDice.indexDice])
-                                    print("must do high dice");
-                                else UpdateMoventDiceNormalSituation();
+                        Dice HighDice = gameManager.GetHighDice() == gameManager.dices[0].diceCount ? gameManager.dices[0] : gameManager.dices[1];
+                        // if highest dice hasn't been done yet.
+                        if (!gameManager.DoneMove[HighDice.indexDice]) {
+                            // if player chose to move according the other dice
+                            if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex)) {
+                                // did the other dice and can't do the second dice (the higher) after , than MessageNeedToPop = true;
+                                if ((GameManger.PlayerTurn == "Black" && gameManager.CheckCanPutThere(TriangleIndex + gameManager.GetHighDice(), "Black") == -1) || (GameManger.PlayerTurn == "White" && gameManager.CheckCanPutThere(TriangleIndex - gameManager.GetHighDice() + 1, "White") == -1))
+                                    MessageNeedToPop = true;
                             }
-
                         }
-                        else // choose to move according to the highest dice
-                            UpdateMoventDiceNormalSituation();
                     }
-                    else UpdateMoventDiceNormalSituation();
-                }else UpdateMoventDiceNormalSituation();
-            }else{ // there is something in OnPlayerBlack / onPlayerWhite array (Trapped stones)
+                }
+                if (!MessageNeedToPop)
+                    UpdateMoventDiceNormalSituation();
+                else
+                {
+                    // show message must to do the highest dice
+                    gameManager.panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "לפי חוק שש-בש, אם ניתן להזיז שחקן לפי הקובייה הגדולה במקום אחד, אזי חובה לשחק את הקוביה הגדולה מבין השניים";
+                    gameManager.panelTurnpass.gameObject.SetActive(true);
+                    // show a message on display to tell the player that the turn pass
+                }
+            }
+            else{ // there is something in OnPlayerBlack / onPlayerWhite array (Trapped stones)
                 JumpOnOppositeStone(); // check if the participent jump on oppoise stone on the board
 
                 List<Player> currentList = GetCurrentListAccordingToTurn(); // get current trapped stones Array according to turn's current player
@@ -194,6 +198,7 @@ public class Triangle : MonoBehaviour
             {
                 if (!gameManager.ThereIsOptionalMove())
                 {
+                    gameManager.panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב";
                     gameManager.panelTurnpass.SetActive(true);
                     gameManager.PassTurn();
                 }
