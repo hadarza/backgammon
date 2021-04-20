@@ -79,9 +79,6 @@ public class Dice : MonoBehaviour
 
     public void OnCollisionStay(Collision collision)
     {
-        print(gameManager.dices[0].isDiceLand);
-        print(gameManager.dices[1].isDiceLand);
-
         if (gameManager.RollForPlayerStartGame){
                 StartCoroutine(Wait());
 
@@ -105,7 +102,7 @@ public class Dice : MonoBehaviour
                 case 1:
                     startGame = -1;
                     GameManger.PlayerTurn = "Black";
-                    TextToShow = "שחקן 1 - שחור מתחיל את המשחק";
+                    TextToShow = "שחקן 1 - שחור מתחיל את המשחק, הגרל קוביה";
                     foreach (Dice d in gameManager.dices)
                         d.isDiceLand = true;
                     RollBtn.gameObject.SetActive(false);
@@ -114,7 +111,7 @@ public class Dice : MonoBehaviour
                 case 2:
                     startGame = -1;
                     GameManger.PlayerTurn = "White";
-                    TextToShow = "שחקן 2 - לבן מתחיל את המשחק";
+                    TextToShow = "שחקן 2 - לבן מתחיל את המשחק, הגרל קובייה";
                     foreach (Dice d in gameManager.dices)
                         d.isDiceLand = true;
                     RollBtn.gameObject.SetActive(false);

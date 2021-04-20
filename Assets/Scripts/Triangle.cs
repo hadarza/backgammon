@@ -95,14 +95,21 @@ public class Triangle : MonoBehaviour
                 if (!gameManager.SumMovements.IsDouble) {
                     if (gameManager.CountPossibleOptionsToDoHighestMove() == 1){
                         Dice HighDice = gameManager.GetHighDice() == gameManager.dices[0].diceCount ? gameManager.dices[0] : gameManager.dices[1];
-                        // if highest dice hasn't been done yet.
-                        if (!gameManager.DoneMove[HighDice.indexDice]) {
-                            // if player chose to move according the other dice
-                            if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex)) {
-                                // did the other dice and can't do the second dice (the higher) after , than MessageNeedToPop = true;
-                                if ((GameManger.PlayerTurn == "Black" && gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle + Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) + gameManager.GetHighDice(), "Black") == -1) ||
-                                    (GameManger.PlayerTurn == "White" && gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle - Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) - gameManager.GetHighDice() + 1, "White") == -1))
-                                    MessageNeedToPop = true;
+                        //if highest dice hasn't been done yet.
+                        if (!gameManager.DoneMove[HighDice.indexDice])
+{                           // if player chose to select the player that has the possible option to move according to the highest dice.
+                            if (TriangleIndex == gameManager.currentObjectPossibleToMovement.indexTriangle){
+                                // if player chose to move according the other dice
+                                if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex)){
+                                    // did the other dice and can't do the second dice (the higher) after , than MessageNeedToPop = true;
+                                    if (GameManger.PlayerTurn == "Black"){
+                                        if (gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle + Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) + gameManager.GetHighDice(), "Black") == -1)
+                                            MessageNeedToPop = true;
+                                    }else{
+                                        if (gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle - Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) - gameManager.GetHighDice() + 1, "White") == -1)
+                                            MessageNeedToPop = true;
+                                    }
+                                }
                             }
                         }
                     }

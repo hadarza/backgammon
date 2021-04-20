@@ -64,6 +64,7 @@ public class GameManger : MonoBehaviour
     public GameObject UIcurrentPlayer;
 
     public GameObject[] textBlackWhite;
+    public Player currentObjectPossibleToMovement;
     private void Start()
     {
         diceSides = Resources.LoadAll<Sprite>("DiceSides/");
@@ -381,18 +382,16 @@ public class GameManger : MonoBehaviour
 
     //This function return true if there is an optional move on all board from TypeTurn, false if not.
     public bool ThereIsOptionalMove(){
-        for (int indexBuffer = 0; indexBuffer < dicesCount.Length; indexBuffer++)
-        {
-            if (dicesCount[indexBuffer] != 0)
-            {
-                foreach (Stack<Player> s in BoardGame){
-                if (s.Count > 0){
-                        if (s.Peek().PlayerType == PlayerTurn){
-                            if (!DoneMove[indexBuffer]){
-                                int index = PlayerTurn == "Black" ? s.Peek().indexTriangle + dicesCount[indexBuffer] : s.Peek().indexTriangle - dicesCount[indexBuffer];
-                                string opposite = PlayerTurn == "Black" ? "White" : "Black";
-                                if (CheckCanPutThere(index, opposite) != -1)
-                                    return true;
+        for (int indexBuffer = 0; indexBuffer < dicesCount.Length; indexBuffer++){
+            if (dicesCount[indexBuffer] != 0){
+                if (!DoneMove[indexBuffer]){
+                    foreach (Stack<Player> s in BoardGame){
+                        if (s.Count > 0){
+                            if (s.Peek().PlayerType == PlayerTurn){
+                                    int index = PlayerTurn == "Black" ? s.Peek().indexTriangle + dicesCount[indexBuffer] : s.Peek().indexTriangle - dicesCount[indexBuffer];
+                                    string opposite = PlayerTurn == "Black" ? "White" : "Black";
+                                    if (CheckCanPutThere(index, opposite) != -1)
+                                        return true;
                             }
                         }
                     }
@@ -410,15 +409,21 @@ public class GameManger : MonoBehaviour
             if (s.Count > 0){
                 if (s.Peek().PlayerType == PlayerTurn){
                     if (PlayerTurn == "Black"){
-                        if (CheckCanPutThere(s.Peek().indexTriangle + highestDice, "White") != -1)
+                        if (CheckCanPutThere(s.Peek().indexTriangle + highestDice, "White") != -1){
+                            currentObjectPossibleToMovement = s.Peek();
                             countPossibleForHighestDice++;
+                        }
                     }else{
-                        if (CheckCanPutThere(s.Peek().indexTriangle - highestDice, "Black") != -1)
+                        if (CheckCanPutThere(s.Peek().indexTriangle - highestDice, "Black") != -1){
+                            currentObjectPossibleToMovement = s.Peek();
                             countPossibleForHighestDice++;
+                        }
                     }
                 }
             }
         }
+        if (countPossibleForHighestDice != 1)
+            currentObjectPossibleToMovement = null; // save player when there is only option for movemnt for the higher dice. for checking if the stone the participent click on is the possible one.
         return countPossibleForHighestDice;
     }
 

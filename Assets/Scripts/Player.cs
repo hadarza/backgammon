@@ -39,6 +39,9 @@ public class Player : MonoBehaviour
                                     OnSelected.OnChosingMove += gameManager.ShowWhereCanJumpTo;
                                     OnSelected.OnChosingMove += gameManager.ShowTriangleMovement;
                                 }else{
+                                    OnSelected.OnChosingMove -= gameManager.ChangeColorToCurrentPlayer;
+                                    OnSelected.OnChosingMove -= gameManager.ShowWhereCanJumpTo;
+                                    OnSelected.OnChosingMove -= gameManager.ShowTriangleMovement;
                                     ChangeBackToNormal();
                                     GameManger.LastSelected = null;
                                     // hide the triangles , so after deselect, we won't see the triangles movements.
@@ -91,14 +94,19 @@ public class Player : MonoBehaviour
                     // if you have at least one stone on the stack of countDice
                     if (indexTriangle == gameManager.dices[i].diceCount || GameManger.BOARD_TRIANGLES - indexTriangle + 1 == gameManager.dices[i].diceCount)
                     {
-                        ToggleHideShowRectangle(true);
-                        break;
+                        if ((!gameManager.DoneMove[gameManager.dices[i].indexDice] && !gameManager.SumMovements.IsDouble) || gameManager.SumMovements.IsDouble){
+                            ToggleHideShowRectangle(true);
+                            break;
+                        }
                     }
                     else
                         ToggleHideShowRectangle(false);
                 }
-                else
-                    ToggleHideShowRectangle(false);
+                // if we don't have anything from 6 to diceIndex than have to take from the last stack that exist
+                else if (IsStacksEmptyUntilLocation(gameManager.dices[i].diceCount)){
+                    ToggleHideShowRectangle(true);
+                }
+                else ToggleHideShowRectangle(false);
             }
         }
     }
@@ -110,5 +118,15 @@ public class Player : MonoBehaviour
             gameManager.RectanglesShowTakeOut[0].SetActive(IsShown);
         else
             gameManager.RectanglesShowTakeOut[1].SetActive(IsShown);
+    }
+
+    public bool IsStacksEmptyUntilLocation(int location)
+    {
+        for(int i = 6; i > location ; i--)
+        {
+            if(gameManager.BoardGame[i - 1].Count == 0)
+                return false;
+        }
+        return true;
     }
 }
