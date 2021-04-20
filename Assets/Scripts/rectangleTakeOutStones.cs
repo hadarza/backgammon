@@ -65,6 +65,10 @@ public class rectangleTakeOutStones : MonoBehaviour
             }
                 OnSelected.SelectedPlayer.indexTriangle = -1; // not on board anymore
                 OnSelected.SelectedPlayer = null;
+
+            if (gameManager.SumMovements.IsPlayerDidAllSteps()){
+                gameManager.PassTurn();
+            }
         }
     }
 }

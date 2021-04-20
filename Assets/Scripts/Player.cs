@@ -87,26 +87,47 @@ public class Player : MonoBehaviour
 
     public void PlayerRemoveStones()
     {
-        if (gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn)){
-            // can't use foreach , beacuse break doesn't work there.
-            for(int i=0;i<gameManager.dices.Length;i++){
-                if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count > 0){
-                    // if you have at least one stone on the stack of countDice
-                    if (indexTriangle == gameManager.dices[i].diceCount || GameManger.BOARD_TRIANGLES - indexTriangle + 1 == gameManager.dices[i].diceCount)
-                    {
-                        if ((!gameManager.DoneMove[gameManager.dices[i].indexDice] && !gameManager.SumMovements.IsDouble) || gameManager.SumMovements.IsDouble){
-                            ToggleHideShowRectangle(true);
-                            break;
+        int locStart;
+        if (PlayerType == GameManger.PlayerTurn){
+            if (gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn)){
+                // can't use foreach , beacuse break doesn't work there.
+                for (int i = 0; i < gameManager.dices.Length; i++){
+                    if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count > 0) {
+                        // if you have at least one stone on the stack of countDice
+                        if (indexTriangle == gameManager.dices[i].diceCount || GameManger.BOARD_TRIANGLES - indexTriangle + 1 == gameManager.dices[i].diceCount) {
+                            if ((!gameManager.DoneMove[gameManager.dices[i].indexDice] && !gameManager.SumMovements.IsDouble) || gameManager.SumMovements.IsDouble) {
+                                ToggleHideShowRectangle(true);
+                                break;
+                            }
                         }
+                        else
+                            ToggleHideShowRectangle(false);
                     }
-                    else
-                        ToggleHideShowRectangle(false);
+                    // if we don't have anything from 6 to diceIndex than have to take from the last stack that exist
+                    else{
+                        switch (PlayerType)
+                        {
+                            case "White":
+                                locStart = 6;
+                                if (IsStacksEmptyUntilLocation(gameManager.dices[i].diceCount, locStart))
+                                {
+                                    if (OnSelected.SelectedPlayer.indexTriangle == GetLastStackFull(locStart))
+                                        ToggleHideShowRectangle(true);
+                                    else ToggleHideShowRectangle(false);
+                                }
+                                break;
+                            case "Black":
+                                locStart = 24;
+                                if (IsStacksEmptyUntilLocation(gameManager.dices[i].diceCount, locStart))
+                                {
+                                    if (OnSelected.SelectedPlayer.indexTriangle == GetLastStackFull(locStart))
+                                        ToggleHideShowRectangle(true);
+                                    else ToggleHideShowRectangle(false);
+                                }
+                                break;
+                        }                        
+                    }
                 }
-                // if we don't have anything from 6 to diceIndex than have to take from the last stack that exist
-                else if (IsStacksEmptyUntilLocation(gameManager.dices[i].diceCount)){
-                    ToggleHideShowRectangle(true);
-                }
-                else ToggleHideShowRectangle(false);
             }
         }
     }
@@ -119,14 +140,22 @@ public class Player : MonoBehaviour
         else
             gameManager.RectanglesShowTakeOut[1].SetActive(IsShown);
     }
-
-    public bool IsStacksEmptyUntilLocation(int location)
+    // This function return true if in stack of stones 
+    public bool IsStacksEmptyUntilLocation(int locationDice, int locationStart)
     {
-        for(int i = 6; i > location ; i--)
+        for(int i = locationStart; i >= locationDice; i--)
         {
-            if(gameManager.BoardGame[i - 1].Count == 0)
+            if(gameManager.BoardGame[locationStart - 1].Count == 0)
                 return false;
         }
         return true;
+    }
+    public int GetLastStackFull(int locationStart)
+    {
+        for (int i = locationStart; i >= locationStart - 6; i--){
+            if (gameManager.BoardGame[i].Count > 0)
+                return i;
+        }
+        return -1; // all stones are out
     }
 }
