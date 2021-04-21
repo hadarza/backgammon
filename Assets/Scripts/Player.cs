@@ -100,13 +100,13 @@ public class Player : MonoBehaviour
                             IndexCheck = gameManager.dices[i].diceCount - 1;
                             break;
                         case "Black":
-                            IndexCheck = GameManger.BOARD_TRIANGLES - gameManager.dices[i].diceCount + 1;
+                            IndexCheck = GameManger.BOARD_TRIANGLES - gameManager.dices[i].diceCount;
                             break;
 
                     }
                     if (gameManager.BoardGame[IndexCheck].Count > 0) {
                         // if you have at least one stone on the stack of countDice
-                        if (indexTriangle == gameManager.dices[i].diceCount || GameManger.BOARD_TRIANGLES - indexTriangle + 1 == gameManager.dices[i].diceCount) {
+                        if (indexTriangle == gameManager.dices[i].diceCount || GameManger.BOARD_TRIANGLES - indexTriangle == gameManager.dices[i].diceCount) {
                             if ((!gameManager.DoneMove[gameManager.dices[i].indexDice] && !gameManager.SumMovements.IsDouble) || gameManager.SumMovements.IsDouble) {
                                 ToggleHideShowRectangle(true);
                                 break;
@@ -127,6 +127,8 @@ public class Player : MonoBehaviour
                                         ToggleHideShowRectangle(true);
                                     else ToggleHideShowRectangle(false);
                                 }
+                                else ToggleHideShowRectangle(false);
+
                                 break;
                             case "Black":
                                 locStart = 24;
@@ -136,6 +138,7 @@ public class Player : MonoBehaviour
                                         ToggleHideShowRectangle(true);
                                     else ToggleHideShowRectangle(false);
                                 }
+                                else ToggleHideShowRectangle(false);
                                 break;
                         }                        
                     }
@@ -157,15 +160,15 @@ public class Player : MonoBehaviour
     {
         for(int i = locationStart; i >= locationDice; i--)
         {
-            if(gameManager.BoardGame[locationStart - 1].Count == 0)
+            if(gameManager.BoardGame[locationStart - 1].Count > 0)
                 return false;
         }
         return true;
     }
     public int GetLastStackFull(int locationStart)
     {
-        for (int i = locationStart; i >= locationStart - 6; i--){
-            if (gameManager.BoardGame[i].Count > 0)
+        for (int i = locationStart; i > locationStart - 6; i--){
+            if (gameManager.BoardGame[i - 1].Count > 0)
                 return i;
         }
         return -1; // all stones are out

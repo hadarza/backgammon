@@ -79,14 +79,6 @@ public class RollingDice : MonoBehaviour
             currentPlayer = GameManger.PlayerTurn == "Black" ? "שחור" : "לבן";
             gameManger.UIcurrentPlayer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = " תור שחקן: שחקן " + currentPlayer;
             ShowUIcurrentPlayer();
-            // after rolling check if there is an option to move a stone.
-            if (!gameManger.ThereIsOptionalMove() && !gameManger.isAllPlayersCanRemoved(gameManger.BoardGame, GameManger.PlayerTurn))
-            {
-                gameManger.panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב";
-                gameManger.panelTurnpass.SetActive(true);
-                gameManger.PassTurn();
-            }
-
         }
 
     }

@@ -161,6 +161,15 @@ public class Triangle : MonoBehaviour
     {
         gameManager.CanMoveStonesOnBoard = true;
         UpdateRollingOnRelocateTrappedStones();
+        if (!gameManager.SumMovements.IsPlayerDidAllSteps())
+        {
+            if (!gameManager.ThereIsOptionalMove())
+            {
+                gameManager.panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב";
+                gameManager.panelTurnpass.SetActive(true);
+                gameManager.PassTurn();
+            }
+        }
     }
 
     public void UpdateMovementMoreThanOneTrapped()

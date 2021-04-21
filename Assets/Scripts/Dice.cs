@@ -152,7 +152,14 @@ public class Dice : MonoBehaviour
     		//	orignalDice[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
         gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
         gameManager.UpdateBufferOfDices();
-        
+
+        // after rolling check if there is an option to move a stone.
+        if (!gameManager.ThereIsOptionalMove() && !gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn))
+        {
+            gameManager.panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב";
+            gameManager.panelTurnpass.SetActive(true);
+            gameManager.PassTurn();
+        }
 
         // check if there is an optional move, If not, show a message and pass turn
         //  if (!gameManager.ThereIsOptionalMove())
