@@ -323,50 +323,48 @@ public class GameManger : MonoBehaviour
         PassTurn();
     }
 
-    public void changeLocationsToTrappedStones(List<Player> Trapped)
+    public void changeLocationsToTrappedStones(string PlayerTrapped)
     {
         int canPutInDice1, canPutInDice2;
         string oppoiste;
-        foreach (Player trappedStone in Trapped)
+
+        oppoiste = PlayerTrapped == "Black" ? "White" : "Black";
+
+        if (PlayerTrapped == "Black")
         {
-            oppoiste = trappedStone.PlayerType == "Black" ? "White" : "Black";
-
-            if (trappedStone.PlayerType == "Black")
-            {
-                if (DoneMove[0])
-                    canPutInDice1 = -1;
-                else canPutInDice1 = CheckCanPutThere(dices[0].diceCount, oppoiste);
-                if (DoneMove[1])
-                    canPutInDice2 = -1;
-                else
-                    canPutInDice2 = CheckCanPutThere(dices[1].diceCount, oppoiste);
-            }
+            if (DoneMove[0])
+                canPutInDice1 = -1;
+            else canPutInDice1 = CheckCanPutThere(dices[0].diceCount, oppoiste);
+            if (DoneMove[1])
+                canPutInDice2 = -1;
             else
-            {
-                if (DoneMove[0])
-                    canPutInDice1 = -1;
-                else canPutInDice1 = CheckCanPutThere(BOARD_TRIANGLES - dices[0].diceCount + 1, oppoiste);
-                if (DoneMove[1])
-                    canPutInDice2 = -1;
-                else canPutInDice2 = CheckCanPutThere(BOARD_TRIANGLES - dices[1].diceCount + 1, oppoiste);
-            }
-            if (canPutInDice1 != -1 && canPutInDice2 != -1)
-            {
-                triangles[canPutInDice1 - 1].gameObject.SetActive(true);
-                triangles[canPutInDice2 - 1].gameObject.SetActive(true);
-            }
-            else if (canPutInDice1 == -1 && canPutInDice2 != -1)
-                triangles[canPutInDice2 - 1].gameObject.SetActive(true);
+                canPutInDice2 = CheckCanPutThere(dices[1].diceCount, oppoiste);
+        }
+        else
+        {
+            if (DoneMove[0])
+                canPutInDice1 = -1;
+            else canPutInDice1 = CheckCanPutThere(BOARD_TRIANGLES - dices[0].diceCount + 1, oppoiste);
+            if (DoneMove[1])
+                canPutInDice2 = -1;
+            else canPutInDice2 = CheckCanPutThere(BOARD_TRIANGLES - dices[1].diceCount + 1, oppoiste);
+        }
+        if (canPutInDice1 != -1 && canPutInDice2 != -1)
+        {
+            triangles[canPutInDice1 - 1].gameObject.SetActive(true);
+            triangles[canPutInDice2 - 1].gameObject.SetActive(true);
+        }
+        else if (canPutInDice1 == -1 && canPutInDice2 != -1)
+            triangles[canPutInDice2 - 1].gameObject.SetActive(true);
 
-            else if (canPutInDice1 != -1 && canPutInDice2 == -1)
-                triangles[canPutInDice1 - 1].gameObject.SetActive(true);
-            else
-            {
-                panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין לך היכן להניח את האבנים הכלואות ולכן התור עובר ליריב";
-                panelTurnpass.gameObject.SetActive(true);
-                // show a message on display to tell the player that the turn pass
-                PassTurn();
-            }
+        else if (canPutInDice1 != -1 && canPutInDice2 == -1)
+            triangles[canPutInDice1 - 1].gameObject.SetActive(true);
+        else
+        {
+            panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין לך היכן להניח את האבנים הכלואות ולכן התור עובר ליריב";
+            panelTurnpass.gameObject.SetActive(true);
+            // show a message on display to tell the player that the turn pass
+            PassTurn();
         }
     }
     // search on TrappedList , if a stone is found. If so, return true. else, return false.

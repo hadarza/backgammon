@@ -265,6 +265,10 @@ public class Triangle : MonoBehaviour
                 if (gameManager.SumMovements.firstDice == MovementToDecrease){
                     if(gameManager.CanMoveStonesOnBoard)
                         ShowMovementAfterDice(gameManager.DoneMove[1], 1);
+                    else{
+                        gameManager.indexCountMove++;
+                        gameManager.HideAllTriangles();
+                    }
                     gameManager.DoneMove[0] = true;
                     gameManager.IndexPutAccordingToDice[0] = -1;
                 }
@@ -273,6 +277,10 @@ public class Triangle : MonoBehaviour
                 if (gameManager.SumMovements.secondDice == MovementToDecrease){
                     if (gameManager.CanMoveStonesOnBoard)
                         ShowMovementAfterDice(gameManager.DoneMove[0], 0);
+                    else{
+                        gameManager.indexCountMove++;
+                        gameManager.HideAllTriangles();
+                    }
 
                     gameManager.DoneMove[1] = true;
                     gameManager.IndexPutAccordingToDice[1] = -1;
@@ -290,20 +298,35 @@ public class Triangle : MonoBehaviour
                 case 0:
                     if (gameManager.CanMoveStonesOnBoard)
                         ShowMovementAfterDice(gameManager.DoneMove[1], 0);
+                    else{
+                        gameManager.indexCountMove++;
+                        gameManager.HideAllTriangles();
+                    }
                     gameManager.DoneMove[0] = true;
                     gameManager.IndexPutAccordingToDice[0] = -1;
-                    break;
+                    
+                        break;
                 case 1:
                     if (gameManager.CanMoveStonesOnBoard)
                         ShowMovementAfterDice(gameManager.DoneMove[2], 0);
+                    else{
+                        gameManager.indexCountMove++;
+                        gameManager.HideAllTriangles();
+                    }
                     gameManager.DoneMove[1] = true;
                     gameManager.IndexPutAccordingToDice[1] = -1;
-                    break;
+                    
+                        break;
                 case 2:
                     if (gameManager.CanMoveStonesOnBoard)
                         ShowMovementAfterDice(gameManager.DoneMove[3], 0);
+                    else{
+                        gameManager.indexCountMove++;
+                        gameManager.HideAllTriangles();
+                    }
                     gameManager.DoneMove[2] = true;
                     gameManager.IndexPutAccordingToDice[2] = -1;
+                    
                     break;
                 case 3:
                     gameManager.DoneMove[3] = true;

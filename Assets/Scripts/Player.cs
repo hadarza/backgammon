@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
     Ray ray;
     RaycastHit hit;
     GameManger gameManager;
-    
+    List<Player> currentList;
 
     private void Start()
     {
@@ -54,7 +54,6 @@ public class Player : MonoBehaviour
                             gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
                             if (GameManger.LastSelected != gameObject)
                                 OnSelected.OnChosingMove += gameManager.ChangeColorToCurrentPlayer;
-                            List<Player> currentList;
                             currentList = (PlayerType == "Black") ? gameManager.onPlayerBlack : gameManager.onPlayerWhite;
                             if (currentList != null)
                             {
@@ -65,7 +64,7 @@ public class Player : MonoBehaviour
                                         if (!p.GetComponent<OnSelected>())
                                             p.transform.gameObject.AddComponent<OnSelected>();
                                     }
-                                    gameManager.changeLocationsToTrappedStones(currentList);
+                                    gameManager.changeLocationsToTrappedStones(PlayerType);
                                 }
                             }
                         }
@@ -87,12 +86,25 @@ public class Player : MonoBehaviour
 
     public void PlayerRemoveStones()
     {
+        currentList = (PlayerType == "Black") ? gameManager.onPlayerBlack : gameManager.onPlayerWhite;
+        int IndexCheck = 0;
         int locStart;
         if (PlayerType == GameManger.PlayerTurn){
-            if (gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn)){
+            if (gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn) && currentList.Count == 0)
+            {
                 // can't use foreach , beacuse break doesn't work there.
                 for (int i = 0; i < gameManager.dices.Length; i++){
-                    if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count > 0) {
+                    switch (PlayerType)
+                    {
+                        case "White":
+                            IndexCheck = gameManager.dices[i].diceCount - 1;
+                            break;
+                        case "Black":
+                            IndexCheck = GameManger.BOARD_TRIANGLES - gameManager.dices[i].diceCount + 1;
+                            break;
+
+                    }
+                    if (gameManager.BoardGame[IndexCheck].Count > 0) {
                         // if you have at least one stone on the stack of countDice
                         if (indexTriangle == gameManager.dices[i].diceCount || GameManger.BOARD_TRIANGLES - indexTriangle + 1 == gameManager.dices[i].diceCount) {
                             if ((!gameManager.DoneMove[gameManager.dices[i].indexDice] && !gameManager.SumMovements.IsDouble) || gameManager.SumMovements.IsDouble) {
