@@ -24,7 +24,7 @@ public class GameManger : MonoBehaviour
     public GameObject[] RectanglesShowTakeOut;
     public const int BOARD_TRIANGLES = 24;
 
-    public static string PlayerTurn;
+    public static string PlayerTurn = null;
     public static Material newMaterialSelected;
 
     public Dice[] dices;
@@ -65,13 +65,19 @@ public class GameManger : MonoBehaviour
 
     public GameObject[] textBlackWhite;
     public Player currentObjectPossibleToMovement;
+
+    public Canvas CanvasLoading;
+
+    private void Awake()
+    {
+        BoardGame = new List<Stack<Player>>();
+    }
     private void Start()
     {
         diceSides = Resources.LoadAll<Sprite>("DiceSides/");
         move = Move.PlayTwoDice;
         canRoll = true;
         newMaterialSelected = new Material(source);
-        BoardGame = new List<Stack<Player>>();
         PushStacksToBoard(); // push into an array a null stack. every stack will indicate a traingle in the board
 
         triangles = new Triangle[BOARD_TRIANGLES];
@@ -99,7 +105,7 @@ public class GameManger : MonoBehaviour
     {
         for(int i=1;i<15;i++)
         {
-            stones[i] = stones[0] + new Vector3(0, 0, 0.2f) * i;
+            stones[i] = stones[0] - new Vector3(0, 0, 0.2f) * i;
         }
         return stones;
     }
@@ -285,7 +291,8 @@ public class GameManger : MonoBehaviour
     //pass turn to the next player
     public void PassTurn(){
         // change color to normal
-        LastSelected.GetComponent<Renderer>().material = NormalColor;
+        if(LastSelected != null)
+            LastSelected.GetComponent<Renderer>().material = NormalColor;
         // change turn
         if (PlayerTurn == "Black")
             PlayerTurn = "White";
@@ -294,6 +301,41 @@ public class GameManger : MonoBehaviour
 
         canRoll = true; //  be able to roll when the other participent finish his turn.
         DiceManager.NotCheckForThisTurn = true;
+        //make this so it won't be able to click on the other Type player and add OnSelected before dices rolled again.
+        if (IsBothDicesLandAndRoll())
+        {
+            foreach (Dice d in dices) { 
+                d.diceCount = 0;
+            }
+        }
+        print("do something");
+
+        foreach (Stack<Player> p in BoardGame)
+        {
+            if (p.Count > 0)
+            {
+                if (p.Peek().GetComponent<OnSelected>())
+                    Destroy(p.Peek().GetComponent<OnSelected>());
+            }
+        }
+        // remove Onselected from all stones
+        foreach(Player p in onPlayerBlack){
+            if (p.GetComponent<OnSelected>())
+                Destroy(p.GetComponent<OnSelected>());
+        }
+        foreach (Player p in onPlayerWhite)
+        {
+            if (p.GetComponent<OnSelected>())
+                Destroy(p.GetComponent<OnSelected>());
+        }
+    }
+
+    public void updateAfterFinishTurn()
+    {
+        indexCountMove++;
+        // if the particpent move according to first/ second dice
+        HideAllTriangles();
+        DisableChosingPlayer();
     }
 
     // add OnSelected Script to players that only are in the last index in their stack + are in the color of PlayerTurn
@@ -361,10 +403,11 @@ public class GameManger : MonoBehaviour
             triangles[canPutInDice1 - 1].gameObject.SetActive(true);
         else
         {
-            panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין לך היכן להניח את האבנים הכלואות ולכן התור עובר ליריב";
+            panelTurnpass.transform.GetChild(1).transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין לך היכן להניח את האבנים הכלואות ולכן התור עובר ליריב";
             panelTurnpass.gameObject.SetActive(true);
             // show a message on display to tell the player that the turn pass
             PassTurn();
+
         }
     }
     // search on TrappedList , if a stone is found. If so, return true. else, return false.
@@ -380,23 +423,35 @@ public class GameManger : MonoBehaviour
 
     //This function return true if there is an optional move on all board from TypeTurn, false if not.
     public bool ThereIsOptionalMove(){
+        bool ThereIsOption = false;
         for (int indexBuffer = 0; indexBuffer < dicesCount.Length; indexBuffer++){
             if (dicesCount[indexBuffer] != 0){
-                if (!DoneMove[indexBuffer]){
-                    foreach (Stack<Player> s in BoardGame){
-                        if (s.Count > 0){
-                            if (s.Peek().PlayerType == PlayerTurn){
-                                    int index = PlayerTurn == "Black" ? s.Peek().indexTriangle + dicesCount[indexBuffer] : s.Peek().indexTriangle - dicesCount[indexBuffer];
-                                    string opposite = PlayerTurn == "Black" ? "White" : "Black";
-                                    if (CheckCanPutThere(index, opposite) != -1)
-                                        return true;
-                            }
-                        }
+                ThereIsOption =  ThereIsOptionalMoveByDice(indexBuffer);
+                // if there at least one optional - return true
+                if (ThereIsOption)
+                    return true;
+            }
+        }
+        return ThereIsOption;
+    }
+
+    public bool ThereIsOptionalMoveByDice(int indexBuffer)
+    {
+        if (!DoneMove[indexBuffer])
+        {
+            foreach (Stack<Player> s in BoardGame){
+                if (s.Count > 0){
+                    if (s.Peek().PlayerType == PlayerTurn)
+                    {
+                        int index = PlayerTurn == "Black" ? s.Peek().indexTriangle + dicesCount[indexBuffer] : s.Peek().indexTriangle - dicesCount[indexBuffer];
+                        string opposite = PlayerTurn == "Black" ? "White" : "Black";
+                        if (CheckCanPutThere(index, opposite) != -1)
+                            return true;
                     }
                 }
             }
         }
-        return false;
+    return false;
     }
 
     public int CountPossibleOptionsToDoHighestMove()

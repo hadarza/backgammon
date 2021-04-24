@@ -19,6 +19,8 @@ public class DiceManager : MonoBehaviour
         this.secondDice = secondDice;
         if (firstDice == secondDice)
             IsDouble = true;
+        else
+            IsDouble = false;
     }
 
     // The function return true if all of steps has been done by the player at his turn;

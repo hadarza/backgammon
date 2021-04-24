@@ -73,21 +73,21 @@ public class Dice : MonoBehaviour
     public void OnCollisionEnter(Collision collision)
     {
         // if dice collide with the boardGame
-        if (collision.gameObject.tag == "Board" || collision.gameObject.tag == "Stone")
-            StartCoroutine(Wait4sec());
+     //  if (collision.gameObject.tag == "Board" || collision.gameObject.tag == "Stone")
+       //     StartCoroutine(Wait4sec());
     }
 
     public void OnCollisionStay(Collision collision)
     {
         if (gameManager.RollForPlayerStartGame){
-                StartCoroutine(Wait());
+                StartCoroutine(Wait4sec());
 
         }
     }
 
     IEnumerator Wait()
     {
-        yield return new WaitForSeconds(6f);
+        yield return new WaitForSeconds(3f);
         int startGame = gameManager.GetPlayerStartGame(gameManager.dices[0].diceCount, gameManager.dices[1].diceCount);
         if (GameManger.PlayerTurn == null)
         {
@@ -122,13 +122,23 @@ public class Dice : MonoBehaviour
             LeanTween.moveY(Instruction.gameObject, 900f, 1f);
             foreach (GameObject text in gameManager.textBlackWhite)
                 text.SetActive(true);
-            foreach (GameObject diceUI in gameManager.diceCountUI)
-                diceUI.SetActive(true);
         }
         ShowVisibleDiceUI();
+
+        if (gameManager.IsBothDicesLandAndRoll()) {
+            if (!gameManager.SumMovements.IsPlayerDidAllSteps()){
+                // after rolling check if there is an option to move a stone.
+                if (!gameManager.ThereIsOptionalMove() && !gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn)){
+                    gameManager.panelTurnpass.transform.GetChild(1).transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין ביכולתך להזיז אבנים לפי הקוביות הנתונות ולכן התור עובר ליריב";
+                    gameManager.panelTurnpass.SetActive(true);
+                    gameManager.PassTurn();
+                }
+            }
+        }
+
     }
 
-    void ShowVisibleDiceUI()
+    public void ShowVisibleDiceUI()
     {
         // show visible UI for finding dice 
         if (gameManager.dices[indexDice].diceCount >= 1){
@@ -142,10 +152,9 @@ public class Dice : MonoBehaviour
     IEnumerator Wait4sec()
     {
         yield return new WaitForSeconds(4f);
-        diceCount = 0;
 
-        foreach (Dice d in gameManager.dices)
-            d.isDiceLand =true;
+        diceCount = 0;
+        this.isDiceLand =true;
         // get dice count according to the angle of the vectors
         diceCount = GetDiceCount();
         for (int i = 0; i < orignalDice.Length; i++)
@@ -153,14 +162,7 @@ public class Dice : MonoBehaviour
         gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
         gameManager.UpdateBufferOfDices();
 
-        // after rolling check if there is an option to move a stone.
-        if (!gameManager.ThereIsOptionalMove() && !gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn))
-        {
-            gameManager.panelTurnpass.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב";
-            gameManager.panelTurnpass.SetActive(true);
-            gameManager.PassTurn();
-        }
-
+        StartCoroutine(Wait());
         // check if there is an optional move, If not, show a message and pass turn
         //  if (!gameManager.ThereIsOptionalMove())
         //    gameManager.panelTurnpass.SetActive(true);

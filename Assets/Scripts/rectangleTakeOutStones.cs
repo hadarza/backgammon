@@ -47,25 +47,21 @@ public class rectangleTakeOutStones : MonoBehaviour
             OnSelected.SelectedPlayer.ToggleHideShowRectangle(false); // hide triangle selected after moving a stone for there
             gameObject.SetActive(false); // hide rectangle
             // update DoneMove after movement out of board - remove stone
-            foreach (Dice d in gameManager.dices){
-                if (d.diceCount == OnSelected.SelectedPlayer.indexTriangle || d.diceCount == GameManger.BOARD_TRIANGLES - OnSelected.SelectedPlayer.indexTriangle + 1){
-                    if (!gameManager.SumMovements.IsDouble)
-                        gameManager.DoneMove[d.indexDice] = true;
-                    else{
-                        // if not double - look for DoneMove that isn't true beacue dices have the same val and so we can't do what we did on !IsDouble
-                        for (int i = 0; i <gameManager.DoneMove.Length;i++){
-                            if (!gameManager.DoneMove[i]){
-                                gameManager.DoneMove[i] = true;
-                                break; // get out of for
-                            }
+                if (!gameManager.SumMovements.IsDouble){
+                    if(OnSelected.SelectedPlayer.indexDiceToRemove != -1)
+                    gameManager.DoneMove[OnSelected.SelectedPlayer.indexDiceToRemove] = true;
+                }else{
+                    // if not double - look for DoneMove that isn't true beacue dices have the same val and so we can't do what we did on !IsDouble
+                    for (int i = 0; i <gameManager.DoneMove.Length;i++){
+                        if (!gameManager.DoneMove[i]){
+                            gameManager.DoneMove[i] = true;
+                            break; // get out of for
                         }
                     }
-
                 }
-            }
+            
                 OnSelected.SelectedPlayer.indexTriangle = -1; // not on board anymore
                 OnSelected.SelectedPlayer = null;
-
             if (gameManager.SumMovements.IsPlayerDidAllSteps()){
                 gameManager.PassTurn();
             }
