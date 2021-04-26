@@ -24,8 +24,7 @@ public class DiceManager : MonoBehaviour
     }
 
     // The function return true if all of steps has been done by the player at his turn;
-    public bool IsPlayerDidAllSteps()
-    {
+    public bool IsPlayerDidAllSteps(){
         int count = 0;
         foreach(bool step in gameManager.DoneMove){
             if (step)

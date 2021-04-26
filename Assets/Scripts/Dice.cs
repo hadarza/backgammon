@@ -127,41 +127,39 @@ public class Dice : MonoBehaviour
 
         if (gameManager.IsBothDicesLandAndRoll()) {
             if (!gameManager.SumMovements.IsPlayerDidAllSteps()){
-                // after rolling check if there is an option to move a stone.
-                if (!gameManager.ThereIsOptionalMove() && !gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn)){
+                // after rolling check if there is an option to move a stone, while we don't have anything onPlayerTrapped Array.
+                if (!gameManager.ThereIsOptionalMove() && !gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn) && gameManager.GetCurrentListAccordingToTurn().Count == 0){
                     gameManager.panelTurnpass.transform.GetChild(1).transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין ביכולתך להזיז אבנים לפי הקוביות הנתונות ולכן התור עובר ליריב";
                     gameManager.panelTurnpass.SetActive(true);
                     gameManager.PassTurn();
                 }
             }
         }
-
     }
 
+    // show visible UI for finding dice 
     public void ShowVisibleDiceUI()
     {
-        // show visible UI for finding dice 
         if (gameManager.dices[indexDice].diceCount >= 1){
             gameManager.diceCountUI[indexDice].GetComponent<Image>().sprite = gameManager.diceSides[gameManager.dices[indexDice].diceCount - 1];
             foreach (GameObject diceUI in gameManager.diceCountUI)
                 diceUI.SetActive(true);
         }
     }
-    
+
 
     IEnumerator Wait4sec()
     {
         yield return new WaitForSeconds(4f);
 
         diceCount = 0;
-        this.isDiceLand =true;
+        this.isDiceLand = true;
         // get dice count according to the angle of the vectors
         diceCount = GetDiceCount();
         for (int i = 0; i < orignalDice.Length; i++)
-    		//	orignalDice[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-        gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
+            //	orignalDice[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+            gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
         gameManager.UpdateBufferOfDices();
-
         StartCoroutine(Wait());
         // check if there is an optional move, If not, show a message and pass turn
         //  if (!gameManager.ThereIsOptionalMove())
@@ -183,10 +181,12 @@ public class Dice : MonoBehaviour
         //        gameManager.highestDice = 0;
         //        break;
         //}
-
     }
-	public int GetDiceCount(){
-		// find dice count according the angle between 2 vectors 
+
+    
+
+    // find dice count according the angle between 2 vectors 
+    public int GetDiceCount(){
 		if (Vector3.Dot(transform.forward, Vector3.up) > 0.6f)
 			diceCount = 2;
 		else if (Vector3.Dot(-transform.forward, Vector3.up) > 0.6f)
@@ -201,5 +201,4 @@ public class Dice : MonoBehaviour
 			diceCount = 6;
 		return diceCount;
 	}
-
 }

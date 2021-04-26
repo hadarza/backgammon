@@ -13,6 +13,7 @@ public class Player : MonoBehaviour
     GameManger gameManager;
     List<Player> currentList;
     public int indexDiceToRemove;
+    int index;
     int locStart;
 
     private void Start()
@@ -21,83 +22,128 @@ public class Player : MonoBehaviour
     }
     private void OnMouseDown()
     {
-        // only if both dices land , than I can select a player.
-        if (gameManager.IsBothDicesLandAndRoll() && gameManager.RollFirstTime) {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit)){
-                if (hit.collider.gameObject == gameObject){
-                    if (!gameManager.SumMovements.IsPlayerDidAllSteps()){
-                        if ((GameManger.PlayerTurn == "Black" && gameManager.onPlayerBlack.Count == 0) ||
-                    (GameManger.PlayerTurn == "White" && gameManager.onPlayerWhite.Count == 0))
-                        {
-                            if (PlayerType == GameManger.PlayerTurn){
-                                if (GameManger.LastSelected != gameObject){
-                                    if (gameManager.IsBothDicesLandAndRoll()){
-                                        // if one of dices or both are 0 mean finishTurn (Did all steps/ pass turn by some reason)
-                                        if (gameManager.dices[0].diceCount != 0 && gameManager.dices[1].diceCount != 0){
-                                            gameManager.EnableChosingPlayer(gameManager.BoardGame[indexTriangle - 1]);
+    if (CanClickOnStone()){
+        if (hasTrappedStones()){
+            if (ChooseToSelect()) UpdateListenersOnSelect();
+            else UpdateListenersOnDeselect(); // Deselect
+        }else{ // Trapped stones
+            EnableSelectedTrappedStone();
+        }
+    }
+}
 
-                                            OnSelected.OnChosingMove -= gameManager.ChangeColorToCurrentPlayer;
-                                            OnSelected.OnChosingMove -= gameManager.ShowWhereCanJumpTo;
-                                            OnSelected.OnChosingMove -= gameManager.ShowTriangleMovement;
+    public bool CanClickOnStone()
+    {
+        if (IsParticipentClickOnStone()){
+            if (IsThisMyTurn()){
+                if (NotDoneYetAllDices())
+                    return true;
+            }
+        }
+        return false;
+    }
 
-                                            OnSelected.OnChosingMove += gameManager.ChangeColorToCurrentPlayer;
-                                            OnSelected.OnChosingMove += gameManager.ShowWhereCanJumpTo;
-                                            OnSelected.OnChosingMove += gameManager.ShowTriangleMovement;
-                                        }
-                                    }
-                                }else{
-                                    ToggleHideShowRectangle(false);
-                                    OnSelected.OnChosingMove -= gameManager.ChangeColorToCurrentPlayer;
-                                    OnSelected.OnChosingMove -= gameManager.ShowWhereCanJumpTo;
-                                    OnSelected.OnChosingMove -= gameManager.ShowTriangleMovement;
-                                    ChangeBackToNormal();
-                                    GameManger.LastSelected = null;
-                                    // hide the triangles , so after deselect, we won't see the triangles movements.
-                                    gameManager.HideAllTriangles();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (gameManager.IsBothDicesLandAndRoll())
-                            {
-                                gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
-                                if (GameManger.LastSelected != gameObject){
-                                    OnSelected.OnChosingMove -= gameManager.ChangeColorToCurrentPlayer;
-                                    OnSelected.OnChosingMove += gameManager.ChangeColorToCurrentPlayer;
-                                    currentList = (PlayerType == "Black") ? gameManager.onPlayerBlack : gameManager.onPlayerWhite;
-                                    if (currentList != null)
-                                    {
-                                        if (gameManager.IsPlayerFoundOnTrapped(currentList, this))
-                                        {
-                                            foreach (Player p in currentList)
-                                            {
-                                                if (!p.GetComponent<OnSelected>())
-                                                    p.transform.gameObject.AddComponent<OnSelected>();
-                                            }
-                                            gameManager.changeLocationsToTrappedStones(PlayerType);
-                                        }
-                                    }
-                                }else{
+    // This function return true if it's my turn, else if not
+    public bool IsThisMyTurn(){
+        return PlayerType == GameManger.PlayerTurn;
+    }
 
-                                    OnSelected.OnChosingMove -= gameManager.ChangeColorToCurrentPlayer;
-                                    ChangeBackToNormal();
-                                    GameManger.LastSelected = null;
-                                    // hide the triangles , so after deselect, we won't see the triangles movements.
-                                    gameManager.HideAllTriangles();
-                                }
-                                
-                            }
-                        }
-                    }
+    // This function return true if participent choose to select twice same stone (mean deselect)
+    public bool ChooseToSelect(){
+        return GameManger.LastSelected != gameObject;
+    }
+
+    public bool NotDoneYetAllDices(){
+        if (gameManager.IsBothDicesLandAndRoll()){
+            if (gameManager.dices[0].diceCount != 0 && gameManager.dices[1].diceCount != 0)
+                return true;
+        }
+        return false;
+    }
+
+    public void EnableSelectedTrappedStone(){
+        gameManager.SumMovements = gameManager.UpdateCurrentDiceManager();
+        if (GameManger.LastSelected != gameObject)
+            OnSelectTrappedStone();
+        else
+            OnDeselectTrappedStone();
+    }
+
+    // this function get called on select trapped stones
+    public void OnSelectTrappedStone(){
+        OnSelected.OnChosingMove -= gameManager.ChangeColorToCurrentPlayer;
+        OnSelected.OnChosingMove += gameManager.ChangeColorToCurrentPlayer;
+
+        currentList = (PlayerType == "Black") ? gameManager.onPlayerBlack : gameManager.onPlayerWhite;
+        if (currentList != null){
+            // check if player is fount on trapped array accordint to TypePlayer
+            if (gameManager.IsPlayerFoundOnTrapped(currentList, this)){
+                // pass on the array and add OnSelected Component, if not have one.
+                foreach (Player p in currentList){
+                    if (!p.GetComponent<OnSelected>())
+                        p.transform.gameObject.AddComponent<OnSelected>();
                 }
+                // show options for movement
+                gameManager.changeLocationsToTrappedStones(PlayerType);
             }
         }
     }
-    public void ChangeBackToNormal()
+
+    // this function get called on deslect trapped stones
+    public void OnDeselectTrappedStone()
     {
-        print(GameManger.LastSelected);
+        OnSelected.OnChosingMove -= gameManager.ChangeColorToCurrentPlayer;
+        ChangeBackToNormal();
+        GameManger.LastSelected = null;
+        // hide the triangles , so after deselect, we won't see the triangles movements.
+        gameManager.HideAllTriangles();
+    }
+
+
+    public void UpdateListenersOnSelect()
+    {
+        // if one of dices or both are 0 mean finishTurn (Did all steps/ pass turn by some reason)
+        if (gameManager.dices[0].diceCount != 0 && gameManager.dices[1].diceCount != 0){
+            gameManager.EnableChosingPlayer(gameManager.BoardGame[indexTriangle - 1]);
+            gameManager.RemoveListeners();
+            gameManager.addListeners();
+        }
+    }
+
+    public void UpdateListenersOnDeselect(){
+        //Hide triangle of stones for removing from the board & hide the triangles , so after deselect, we won't see the triangles movements.
+        ToggleHideShowRectangle(false);
+        gameManager.HideAllTriangles();
+
+        //remove Onselected Listeners
+        gameManager.RemoveListeners();
+
+        // change color of stone to normal & remove from LastSelect 
+        ChangeBackToNormal();
+        GameManger.LastSelected = null;
+    }
+
+    //This function return true if the participent click on stone
+    public bool IsParticipentClickOnStone()
+    {
+        if (gameManager.IsBothDicesLandAndRoll() && gameManager.RollFirstTime){
+            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit)){
+                if (hit.collider.gameObject == gameObject){
+                    if (!gameManager.SumMovements.IsPlayerDidAllSteps())
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // This function return true if there is no trappedStones from our current TypePlayer
+    public bool hasTrappedStones(){
+        return (GameManger.PlayerTurn == "Black" && gameManager.onPlayerBlack.Count == 0) ||(GameManger.PlayerTurn == "White" && gameManager.onPlayerWhite.Count == 0);
+    }
+    // This function responsible to change the color of stone on deselect it.
+    public void ChangeBackToNormal(){
         Renderer renderSelected = GameManger.LastSelected.GetComponent<Renderer>();
         Material[] materials = renderSelected.materials;
 
@@ -107,150 +153,168 @@ public class Player : MonoBehaviour
         GameManger.LastSelected.GetComponent<Renderer>().materials = renderSelected.materials;
     }
 
-    public void PlayerRemoveStones()
-    {
+    //This function is responsible for removing stones 
+    public void PlayerRemoveStones(){
         currentList = (PlayerType == "Black") ? gameManager.onPlayerBlack : gameManager.onPlayerWhite;
         int IndexCheck = 0;
+
         if (PlayerType == GameManger.PlayerTurn){
             // check if stones be removed from board
             if (gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn) && currentList.Count == 0)
             {
                 // can't use foreach , beacuse break doesn't work there.
-                for (int i = 0; i < gameManager.dices.Length; i++) {
-                    switch (PlayerType)
-                    {
-                        case "White":
-                            IndexCheck = gameManager.dices[i].diceCount - 1;
-                            break;
-                        case "Black":
-                            IndexCheck = GameManger.BOARD_TRIANGLES - gameManager.dices[i].diceCount;
-                            break;
-
-                    }
-                    if (gameManager.BoardGame[IndexCheck].Count > 0) {
-                        if (gameManager.BoardGame[IndexCheck].Peek().PlayerType == PlayerType)
-                        {
-                            // if you have at least one stone on the stack of countDice from playerType
-                            if (indexTriangle == gameManager.dices[i].diceCount || GameManger.BOARD_TRIANGLES - indexTriangle + 1 == gameManager.dices[i].diceCount)
+                for (int i = 0; i < gameManager.dicesCount.Length; i++) {
+                    if (gameManager.dicesCount[i] >= 1){ // if pass turn happen - then all dices will reset and we will get an error whie trying to do  gameManager.dices[i].diceCount - 1;
+                        // if you didn't did this dice yet
+                        if (!gameManager.DoneMove[i]) { 
+                            switch (PlayerType)
                             {
-                                if ((!gameManager.DoneMove[gameManager.dices[i].indexDice] && !gameManager.SumMovements.IsDouble) || gameManager.SumMovements.IsDouble)
-                                {
-                                    indexDiceToRemove = gameManager.dices[i].indexDice;
-                                    ToggleHideShowRectangle(true);
+                                case "White":
+                                    IndexCheck = gameManager.dicesCount[i] - 1;
                                     break;
-                                }
-                            }
-                            else
-                            {
-                                indexDiceToRemove = -1;
-                                ToggleHideShowRectangle(false);
-                            }
-                        }
-                    }
-                    // if we don't have anything from 6 to diceIndex than have to take from the last stack that exist
-                    else {
-                        string opposite = PlayerType == "Black" ? "White" : "Black";
-                        int loc = PlayerType == "Black" ? OnSelected.SelectedPlayer.indexTriangle + gameManager.dices[i].diceCount : OnSelected.SelectedPlayer.indexTriangle - gameManager.dices[i].diceCount;
+                                case "Black":
+                                    IndexCheck = GameManger.BOARD_TRIANGLES - gameManager.dicesCount[i];
+                                    break;
 
-                        switch (PlayerType)
+                            }
+                            // if the stack according dice has one stone at least. if so, if TriangleIndex selected is equal to dice or 24-dice+ 1 then show option for removing
+                        if (gameManager.BoardGame[IndexCheck].Count > 0)
                         {
-                            case "White":
-                                locStart = 6;
-                                break;
-                            case "Black":
-                                locStart = 19;
-                                break;
-
-                        }
-                            if (locStart == 6 || locStart == 19)
+                            if (gameManager.BoardGame[IndexCheck].Peek().PlayerType == PlayerType)
                             {
-                                if (IsStacksEmptyUntilLocation(gameManager.dices[i].diceCount, locStart))
+                                // if you have at least one stone on the stack of countDice from playerType
+                                if (indexTriangle == gameManager.dicesCount[i] || GameManger.BOARD_TRIANGLES - indexTriangle + 1 == gameManager.dicesCount[i])
                                 {
-                                    if (OnSelected.SelectedPlayer.indexTriangle == GetLastStackFull(locStart))
+                                    if ((!gameManager.DoneMove[i] && !gameManager.SumMovements.IsDouble) || gameManager.SumMovements.IsDouble)
                                     {
-                                        indexDiceToRemove = gameManager.dices[i].indexDice;
+                                        indexDiceToRemove = i;
+                                        if(gameManager.DoneMove[i]){
+                                                if (i == 1)
+                                                    indexDiceToRemove = 0;
+                                                else
+                                                    indexDiceToRemove = 1;
+                                        }
                                         ToggleHideShowRectangle(true);
+                                        break;
                                     }
-                                    else
-                                    {
-                                        indexDiceToRemove = -1;
-                                        ToggleHideShowRectangle(false);
-                                    }
-                                    
-                                } else
-                                {
-                                // check if there is optional to do move by this dice on all board.
-                                // if so - ok. If not, need to check the other dice.
-                                // if no dices can be moved - show message pass turn
-                                if(!gameManager.ThereIsOptionalMove()){
-                                    gameManager.panelTurnpass.transform.GetChild(1).transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין לך היכן להניח את האבנים הכלואות ולכן התור עובר ליריב";
-                                    gameManager.panelTurnpass.gameObject.SetActive(true);
-                                    // show a message on display to tell the player that the turn pass
-                                    gameManager.PassTurn();
                                 }
+                                else
+                                {
                                     indexDiceToRemove = -1;
                                     ToggleHideShowRectangle(false);
                                 }
                             }
+                          
                         }
-                    
-                    
+                        // if we don't have anything from 6 to diceIndex than have to take from the last stack that exist
+                        else{
+                            string opposite = PlayerType == "Black" ? "White" : "Black";
+                            int loc = PlayerType == "Black" ? OnSelected.SelectedPlayer.indexTriangle + gameManager.dicesCount[i] : OnSelected.SelectedPlayer.indexTriangle - gameManager.dicesCount[i];
+
+                            switch (PlayerType)
+                            {
+                                case "White":
+                                    locStart = 6;
+                                    break;
+                                case "Black":
+                                    locStart = 19;
+                                    break;
+
+                            }
+                                if (locStart == 6 || locStart == 19)
+                                {
+                                    if (IsStacksEmptyUntilLocation(gameManager.dicesCount[i], locStart))
+                                    {
+                                        if (OnSelected.SelectedPlayer.indexTriangle == GetLastStackFull(locStart))
+                                        {
+                                            indexDiceToRemove = i;
+                                            if (gameManager.DoneMove[i])
+                                            {
+                                                if (i == 1)
+                                                    indexDiceToRemove = 0;
+                                                else
+                                                    indexDiceToRemove = 1;
+                                            }
+                                            ToggleHideShowRectangle(true);
+                                        }
+                                        else
+                                        {
+                                            indexDiceToRemove = -1;
+                                            ToggleHideShowRectangle(false);
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        // check if there is optional to do move by this dice on all board.
+                                        // if so - ok. If not, need to check the other dice.
+                                        // if no dices can be moved - show message pass turn
+
+                                        /*TODO - check - what if can remove the other dice without moving*/
+
+                                        if (!gameManager.ThereIsOptionalMoveByDice(i)){
+                                            // if can't move any of dices + can't get them out, than pass turn
+                                            if ((i == 3 && gameManager.SumMovements.IsDouble) || (i == 1 && !gameManager.SumMovements.IsDouble))
+                                                gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
+                                                indexDiceToRemove = -1;
+                                                ToggleHideShowRectangle(false);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
     // Toggle - show/hide Triangle for helping player where to click in order to remove stones from board
-    public void ToggleHideShowRectangle(bool IsShown)
-    {
+    public void ToggleHideShowRectangle(bool IsShown){
         // if you have at least one stone on the stack of countDice
         if (GameManger.PlayerTurn == "Black")
             gameManager.RectanglesShowTakeOut[0].SetActive(IsShown);
         else
             gameManager.RectanglesShowTakeOut[1].SetActive(IsShown);
     }
+
     // This function return true if in stack of stones 
     public bool IsStacksEmptyUntilLocation(int locationDice, int locationStart)
     {
-        if (locationStart == 6)
-        {
-            for (int i = locationStart; i >= locationDice; i--)
-            {
-                if (gameManager.BoardGame[locationStart - 1].Count > 0)
-                {
+        if (locationStart == 6){ 
+            for (int i = locationStart; i >= locationDice; i--){
+                if (gameManager.BoardGame[locationStart - 1].Count > 0){
                     if(gameManager.BoardGame[locationStart - 1].Peek().PlayerType == PlayerType)
                         return false;
                 }
             }
         }
-        else
-        {
+        else{
             //locationStart = 19
-            for (int i = locationStart; i <= GameManger.BOARD_TRIANGLES - locationDice; i++)
-            {
-                if (gameManager.BoardGame[locationStart - 1].Count > 0)
-                    return false;
+            for (int i = locationStart; i <= GameManger.BOARD_TRIANGLES - locationDice; i++) {
+                if (gameManager.BoardGame[locationStart - 1].Count > 0){
+                    if (gameManager.BoardGame[locationStart - 1].Peek().PlayerType == PlayerType)
+                        return false;
+
+                }
             }
         }
         return true;
     }
+
+
     public int GetLastStackFull(int locationStart)
     {
-        if (locationStart == 6)
-        {
-            for (int i = locationStart; i > locationStart - 6; i--)
-            {
-                if (gameManager.BoardGame[i - 1].Count > 0)
-                {
+        if (locationStart == 6){
+            for (int i = locationStart; i > locationStart - 6; i--){
+                if (gameManager.BoardGame[i - 1].Count > 0){
                     if(gameManager.BoardGame[i-1].Peek().PlayerType == PlayerType)
                         return i;
                 }
             }
         }
-        else
-        {
+        else{
             //locationStart = 19
-            for (int i = locationStart; i < GameManger.BOARD_TRIANGLES ; i++)
-            {
+            for (int i = locationStart; i <= GameManger.BOARD_TRIANGLES ; i++){
                 if (gameManager.BoardGame[i - 1].Count > 0){
                     if (gameManager.BoardGame[i - 1].Peek().PlayerType == PlayerType)
                         return i;

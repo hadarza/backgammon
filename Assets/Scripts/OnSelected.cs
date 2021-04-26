@@ -8,14 +8,12 @@ public class OnSelected : MonoBehaviour
     public static event ChosingMove OnChosingMove;
 
     public static Player SelectedPlayer;
-    public void OnMouseDown()
-    {
-      if(OnChosingMove != null)
-        {
+
+    public void OnMouseDown(){
+      if(OnChosingMove != null){
             SelectedPlayer = gameObject.GetComponent<Player>();
             OnChosingMove(SelectedPlayer);
             SelectedPlayer.PlayerRemoveStones();
-            print("on chosing move");
         }
     }
     

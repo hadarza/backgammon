@@ -27,13 +27,11 @@ public class DiceWhoStartGame : MonoBehaviour
     static bool DidntFinishRolling = false;
 
     GameObject showStartPlayer;
-    private void Start()
-    {
+    private void Start(){
         textType = FindObjectOfType<UITextTypeWriter>();
 
         // get from textType to PlayerStarter object , can't do with Find cause PlayerStarter is inactive.
         showStartPlayer = textType.transform.parent.GetChild(3).gameObject;
-
         // Assign Renderer component
         rend = GetComponent<Image>();
 
@@ -42,8 +40,7 @@ public class DiceWhoStartGame : MonoBehaviour
         gameObject.transform.GetChild(0).GetComponent<Button>().onClick.AddListener(CallCor);
     }
 
-    public void CallCor()
-    {
+    public void CallCor(){
         StartCoroutine("RollTheDice");
     }
 
