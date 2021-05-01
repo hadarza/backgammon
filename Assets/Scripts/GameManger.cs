@@ -19,11 +19,13 @@ public class GameManger : MonoBehaviour
     public Vector3[] Vector3TakeOutBlackStones;
     public Vector3[] Vector3TakeOutWhiteStones;
 
+    public Canvas CanvasVictory;
 
     public List<Player> BlackStonesTakeOut;
     public List<Player> WhiteStonesTakeOut;
     public GameObject[] RectanglesShowTakeOut;
     public const int BOARD_TRIANGLES = 24;
+    public bool ShowMessagePassTurn = true;
 
     public static string PlayerTurn = null;
     public static Material newMaterialSelected;
@@ -77,11 +79,20 @@ public class GameManger : MonoBehaviour
         diceSides = Resources.LoadAll<Sprite>("DiceSides/");
         newMaterialSelected = new Material(source);
 
-        move = Move.PlayTwoDice;
+        RestartGame();
+    }
+
+    public void RestartGame()
+    {
         canRoll = true;
+        BoardGame = new List<Stack<Player>>();
         PushStacksToBoard(); // push into an array a null stack. every stack will indicate a traingle in the board
         SetTrianglesIndex(); // set triangleIndex for each triangle on board
         SetPossibleLocOfStones();
+        onPlayerBlack = null;
+        onPlayerWhite = null;
+        BlackStonesTakeOut = null;
+        WhiteStonesTakeOut = null;
     }
 
     public void SetTrianglesIndex()
@@ -471,6 +482,128 @@ public class GameManger : MonoBehaviour
         }
         return ThereIsOption;
     }
+   //This function return the IndexCheck of triangle , that will help for checking an optional move to remove stone at this location
+    public int GetIndexCountOnRemovingStones(string PlayerType, int i)
+    {
+        int IndexCheck = 0;
+        switch (PlayerType)
+        {
+            case "White":
+                IndexCheck = dicesCount[i] - 1;
+                break;
+            case "Black":
+                IndexCheck = BOARD_TRIANGLES - dicesCount[i];
+                break;
+
+        }
+        return IndexCheck;
+    }
+
+    public bool CantMove()
+    {
+        return (!ThereIsOptionalMove() && GetCurrentListAccordingToTurn().Count == 0);
+    }
+
+    public bool NeedPassTurnMsg()
+    {
+        int[] indexDices = { 0, 0, 0, 0 };
+        int index = 0;
+        int locStart;
+        bool CanRemoveLastStone;
+        int TriangleCount = 0;
+
+        foreach (int diceCount in dicesCount)
+        {
+            // if dice is exist - means higher than 0
+            if (diceCount > 0){
+                indexDices[index] = GetIndexCountOnRemovingStones(GameManger.PlayerTurn, index); // save the optional triangle to move to
+                // if there is at least one stone in this triangle and we didn't move by this dice
+                if (!DoneMove[index]){
+                    if (BoardGame[indexDices[index]].Count > 0) {
+                        // player can remove this stone out - therefore don't show Passturn Message
+                        if (CheckCanPutThere(indexDices[index], GameManger.PlayerTurn == "Black" ? "White" : "Black") != -1) { 
+                            ShowMessagePassTurn = false;
+                            break;
+                        }
+
+                        else
+                        {
+                            locStart = GameManger.PlayerTurn == "White" ? 6 : 19;
+                            TriangleCount = GameManger.PlayerTurn == "White" ? diceCount : BOARD_TRIANGLES - diceCount + 1;
+                            // check if there is an optional to remove some stone by taking out the last stone in last stack
+                            CanRemoveLastStone = IsThereOptionalToMoveFromLast(locStart, TriangleCount);
+                            if (CanRemoveLastStone)
+                            {
+                                // player can remove stone from last stack - therefore don't show PassTurn message
+                                ShowMessagePassTurn = false;
+                                break;
+                            }
+                        }
+                    }else{
+                        // TODO- check!
+                        locStart = GameManger.PlayerTurn == "White" ? 6 : 19;
+                        TriangleCount = GameManger.PlayerTurn == "White" ? diceCount : BOARD_TRIANGLES - diceCount + 1;
+                        // check if there is an optional to remove some stone by taking out the last stone in last stack
+                        CanRemoveLastStone = IsThereOptionalToMoveFromLast(locStart, TriangleCount);
+                        if (CanRemoveLastStone){
+                            // player can remove stone from last stack - therefore don't show PassTurn message
+                            ShowMessagePassTurn = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            //Increase Index for checking next dice
+            index++;
+        }
+        return ShowMessagePassTurn;
+    }
+
+    // This function return true if there is an option to remove stone from the last index in stack on the list of the 6 stacks that we can get out stones from there
+    public bool IsThereOptionalToMoveFromLast(int locStart, int diceCount)
+    {
+        if (locStart == 6)
+        {
+            if (GetLastStackFull(locStart, PlayerTurn) <= diceCount)
+                return true;
+            return false;
+        }
+        else
+        {
+            // locStart = 19
+            if (GetLastStackFull(locStart, PlayerTurn) >= diceCount)
+                return true;
+            return false;
+        }
+    }
+
+    public int GetLastStackFull(int locationStart,string PlayerType)
+    {
+        if (locationStart == 6)
+        {
+            for (int i = locationStart; i > locationStart - 6; i--)
+            {
+                if (BoardGame[i - 1].Count > 0)
+                {
+                    if (BoardGame[i - 1].Peek().PlayerType == PlayerType)
+                        return i;
+                }
+            }
+        }
+        else
+        {
+            //locationStart = 19
+            for (int i = locationStart; i <= GameManger.BOARD_TRIANGLES; i++)
+            {
+                if (BoardGame[i - 1].Count > 0)
+                {
+                    if (BoardGame[i - 1].Peek().PlayerType == PlayerType)
+                        return i;
+                }
+            }
+        }
+        return -1; // all stones are out
+    }
 
     // The function get indexOfDice and check if there is option to move around the board by this dice
     public bool ThereIsOptionalMoveByDice(int indexBuffer)
@@ -490,18 +623,26 @@ public class GameManger : MonoBehaviour
     return false;
     }
 
-    
+    public void PrintWinner()
+    {
+        List<Player> OutList = UpdateTakeOutListPlayerTurn();
+        if (OutList.Count == 15){
+            CanvasVictory.gameObject.SetActive(true);
+            CanvasVictory.gameObject.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = "מנצח המשחק: " + (OutList.Count == onPlayerBlack.Count ? "שחקן שחור" : "שחקן לבן");
+        }
+    }
 
 
     // this func return the currentListTrapped stones according to currrent TypePlayer
-    public List<Player> GetCurrentListAccordingToTurn()
-    {
-        List<Player> currentList;
-        if (GameManger.PlayerTurn == "Black")
-            currentList = onPlayerBlack;
-        else
-            currentList = onPlayerWhite;
-        return currentList;
+    public List<Player> GetCurrentListAccordingToTurn(){
+        return GameManger.PlayerTurn == "Black" ? onPlayerBlack : onPlayerWhite;
+    }
+
+    //This function update currentTakeOutList according to Playerturn paramter
+    public List<Player> UpdateTakeOutListPlayerTurn(){
+
+        string playerTurn = GameManger.PlayerTurn;
+        return playerTurn == "White" ? WhiteStonesTakeOut : BlackStonesTakeOut;
     }
 
     //The function return num of possible option to do the highest dice between the dices that exist in this turn

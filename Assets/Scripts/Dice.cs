@@ -124,14 +124,33 @@ public class Dice : MonoBehaviour
                 text.SetActive(true);
         }
         ShowVisibleDiceUI();
-
-        if (gameManager.IsBothDicesLandAndRoll()) {
-            if (!gameManager.SumMovements.IsPlayerDidAllSteps()){
-                // after rolling check if there is an option to move a stone, while we don't have anything onPlayerTrapped Array.
-                if (!gameManager.ThereIsOptionalMove() && !gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn) && gameManager.GetCurrentListAccordingToTurn().Count == 0){
-                    gameManager.panelTurnpass.transform.GetChild(1).transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "אין ביכולתך להזיז אבנים לפי הקוביות הנתונות ולכן התור עובר ליריב";
-                    gameManager.panelTurnpass.SetActive(true);
-                    gameManager.PassTurn();
+        
+        if(GameManger.PlayerTurn != null) {
+            if (gameManager.IsBothDicesLandAndRoll()){
+                if (!gameManager.SumMovements.IsPlayerDidAllSteps()){
+                    // after rolling check if there is an option to move a stone, while we don't have anything onPlayerTrapped Array.
+                    if (gameManager.CantMove()){
+                        if(!gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn))
+                            gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אבנים לפי הקוביות הנתונות ולכן התור עובר ליריב");
+                        else{
+                            int[] indexDices = { 0, 0, 0, 0 };
+                            int index = 0;
+                            foreach (int diceCount in gameManager.dicesCount){
+                                if (diceCount > 0){
+                                    indexDices[index] = gameManager.GetIndexCountOnRemovingStones(GameManger.PlayerTurn, index);
+                                    if (gameManager.BoardGame[indexDices[index]].Count > 0){
+                                        if (gameManager.CheckCanPutThere(indexDices[index] + 1, GameManger.PlayerTurn == "Black" ? "White" : "Black") != -1){
+                                            gameManager.ShowMessagePassTurn = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                index++;
+                            }
+                            if (gameManager.ShowMessagePassTurn)
+                                gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
+                        }
+                    }
                 }
             }
         }

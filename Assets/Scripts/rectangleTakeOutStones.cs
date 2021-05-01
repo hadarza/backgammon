@@ -18,10 +18,10 @@ public class rectangleTakeOutStones : MonoBehaviour
     public bool DidClickOnRectangle()
     {
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit)){
-            if (Input.GetMouseButton(0)){
-                if (hit.collider.tag == "Rectangle"){
-                        return true;
+        if (Physics.Raycast(ray, out hit)) {
+            if (Input.GetMouseButton(0)) {
+                if (hit.collider.tag == "Rectangle") {
+                    return true;
                 }
             }
         }
@@ -30,41 +30,85 @@ public class rectangleTakeOutStones : MonoBehaviour
 
     public void OnMouseDown()
     {
-        if (DidClickOnRectangle()){
+        if (DidClickOnRectangle()) {
             // adding to list of stones that take out and remove from the board.
             // also update visual - localPosition + rotation
-            if (GameManger.PlayerTurn == "White"){
-                gameManager.WhiteStonesTakeOut.Add(OnSelected.SelectedPlayer);
-                OnSelected.SelectedPlayer.transform.localPosition = gameManager.Vector3TakeOutWhiteStones[gameManager.WhiteStonesTakeOut.Count - 1];
-            }else{
-                gameManager.BlackStonesTakeOut.Add(OnSelected.SelectedPlayer);
-                OnSelected.SelectedPlayer.transform.localPosition = gameManager.Vector3TakeOutBlackStones[gameManager.BlackStonesTakeOut.Count - 1];
-            }
-            OnSelected.SelectedPlayer.transform.rotation = Quaternion.Euler(new Vector3(270, 0, 0));
-            gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Pop(); // remove from current stack
-            gameManager.HideAllTriangles();
-            gameManager.indexCountMove++;
-            OnSelected.SelectedPlayer.ToggleHideShowRectangle(false); // hide triangle selected after moving a stone for there
-            gameObject.SetActive(false); // hide rectangle
-            // update DoneMove after movement out of board - remove stone
-                if (!gameManager.SumMovements.IsDouble){
-                    if(OnSelected.SelectedPlayer.indexDiceToRemove != -1)
-                    gameManager.DoneMove[OnSelected.SelectedPlayer.indexDiceToRemove] = true;
-                }else{
-                    // if not double - look for DoneMove that isn't true beacue dices have the same val and so we can't do what we did on !IsDouble
-                    for (int i = 0; i <gameManager.DoneMove.Length;i++){
-                        if (!gameManager.DoneMove[i]){
-                            gameManager.DoneMove[i] = true;
-                            break; // get out of for
-                        }
-                    }
+            List<Player> currentTakeOutList = gameManager.UpdateTakeOutListPlayerTurn();
+            Vector3[] currentTakeOutloc = UpdateTakeOutLocPlayerTurn(GameManger.PlayerTurn);
+
+            UpdateVisualAndOnBoard(currentTakeOutList, currentTakeOutloc);
+            UpdateDoneMove();
+            ResetSelected();
+            gameManager.PrintWinner();
+
+            if(!gameManager.CanvasVictory.gameObject.activeInHierarchy)
+                TakeCareOfCases();
+
+        }
+    }
+
+    //This function update currentTakeOutList according to Playerturn paramter
+    public Vector3[] UpdateTakeOutLocPlayerTurn(string playerTurn) {
+        return playerTurn == "White" ? gameManager.Vector3TakeOutWhiteStones : gameManager.Vector3TakeOutBlackStones;
+    }
+
+    public void UpdateVisualAndOnBoard(List<Player> currentTakeOutList, Vector3[] currentTakeOutloc) {
+        // add stone to TakeOut array and show it visual
+        currentTakeOutList.Add(OnSelected.SelectedPlayer);
+        gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Pop(); // remove from current stack
+
+        OnSelected.SelectedPlayer.transform.localPosition = currentTakeOutloc[currentTakeOutList.Count - 1];
+        OnSelected.SelectedPlayer.transform.rotation = Quaternion.Euler(new Vector3(270, 0, 0));
+        gameObject.SetActive(false); // hide rectangle
+        OnSelected.SelectedPlayer.ToggleHideShowRectangle(false); // hide triangle selected after moving a stone for there
+        gameManager.HideAllTriangles();
+
+        gameManager.indexCountMove++;
+    }
+
+    public void ResetSelected() {
+        OnSelected.SelectedPlayer.indexTriangle = -1; // not on board anymore
+        OnSelected.SelectedPlayer = null;
+    }
+
+    public void UpdateDoneMove()
+    {
+        // update DoneMove after movement out of board - remove stone
+        if (!gameManager.SumMovements.IsDouble) {
+            if (OnSelected.SelectedPlayer.indexDiceToRemove != -1)
+                gameManager.DoneMove[OnSelected.SelectedPlayer.indexDiceToRemove] = true;
+        } else {
+            // if not double - look for DoneMove that isn't true beacue dices have the same val and so we can't do what we did on !IsDouble
+            for (int i = 0; i < gameManager.DoneMove.Length; i++) {
+                if (!gameManager.DoneMove[i]) {
+                    gameManager.DoneMove[i] = true;
+                    break; // get out of for
                 }
-            
-                OnSelected.SelectedPlayer.indexTriangle = -1; // not on board anymore
-                OnSelected.SelectedPlayer = null;
-            if (gameManager.SumMovements.IsPlayerDidAllSteps()){
-                gameManager.PassTurn();
+            }
+        }
+    }
+
+    public void TakeCareOfCases() {
+        // on finish turn
+        if (gameManager.SumMovements.IsPlayerDidAllSteps())
+            gameManager.PassTurn();
+        else{
+            if (gameManager.CantMove()){// can't moves stones at all
+                if (gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn)){
+                    gameManager.ShowMessagePassTurn = true; //reset
+                    gameManager.ShowMessagePassTurn = gameManager.NeedPassTurnMsg();
+
+                    if (gameManager.ShowMessagePassTurn)
+                        gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
+                }
+                else
+                {
+                    print("never happen");
+                    gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אבנים לפי הקוביות הנתונות ולכן התור עובר ליריב");
+                }
             }
         }
     }
 }
+
+

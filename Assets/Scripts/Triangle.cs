@@ -71,73 +71,63 @@ public class Triangle : MonoBehaviour
 
 
     public void OnMouseDown(){
+    if (DidClickOnTriangle()){
+        // if we don't have Trapped stones
+        if (NoTrappedTypePlayerStones()){
+            if (!NeedToPopMessageRules())
+                UpdateMoventDiceNormalSituation();
+            else{
+                // show message must to do the highest dice
+                gameManager.WarnPanel.transform.GetChild(1).transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "לפי חוק שש-בש, אם ניתן להזיז שחקן לפי הקובייה הגדולה במקום אחד, אזי חובה לשחק את הקוביה הגדולה מבין השניים";
+                gameManager.WarnPanel.gameObject.SetActive(true);
+            }
+        }else{ // there is something in OnPlayerBlack / onPlayerWhite array (Trapped stones)
+            JumpOnOppositeStone(); // check if the participent jump on oppoise stone on the board
+
+            List<Player> currentList = gameManager.GetCurrentListAccordingToTurn(); // get current trapped stones Array according to turn's current player
+            OnSelected.SelectedPlayer.indexTriangle = TriangleIndex;
+            UpdateOnBoardRemoveFromTrapped(currentList);
+            // after remove the current trapped stone - check if there is more trapped stones from the current TypePlayer
+            if (currentList.Count == 0)UpdateMoventOnlyOneTrapped();
+            else UpdateMovementMoreThanOneTrapped();
+        }
+    }
+}
+       
+    public bool NeedToPopMessageRules()
+    {
         bool MessageNeedToPop = false;
-        if (DidClickOnTriangle()) {
-            // check if we have Trapped stones
-            if (CheckTrappedTypePlayerStones())
-            {
-                if (!gameManager.SumMovements.IsDouble)
-                {
-                    if (gameManager.CountPossibleOptionsToDoHighestMove() == 1)
-                    {
-                        Dice HighDice = gameManager.GetHighDice() == gameManager.dices[0].diceCount ? gameManager.dices[0] : gameManager.dices[1];
-                        //if highest dice hasn't been done yet.
-                        if (!gameManager.DoneMove[HighDice.indexDice])
-                        { // if player chose to select the player that has the possible option to move according to the highest dice.
-                            if (OnSelected.SelectedPlayer.indexTriangle == gameManager.currentObjectPossibleToMovement.indexTriangle)
-                            {
-                                // if player chose to move according the other dice
-                                if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex))
-                                {
-                                    // did the other dice and can't do the second dice (the higher) after , than MessageNeedToPop = true;
-                                    if (GameManger.PlayerTurn == "Black")
-                                    {
-                                        if (gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle + Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) + gameManager.GetHighDice(), "White") == -1)
-                                        {
-                                            if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count == 1)
-                                                MessageNeedToPop = true;
-                                            else MessageNeedToPop = false;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle - Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) - gameManager.GetHighDice(), "Black") == -1)
-                                        {
-                                            if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count == 1)
-                                                MessageNeedToPop = true;
-                                            else MessageNeedToPop = false;
-                                        }
-                                    }
+        if (!gameManager.SumMovements.IsDouble){
+            // if there is one possible option to do highest dice
+            if (gameManager.CountPossibleOptionsToDoHighestMove() == 1){
+                // save the  object HighDice
+                Dice HighDice = gameManager.GetHighDice() == gameManager.dices[0].diceCount ? gameManager.dices[0] : gameManager.dices[1];
+                //if highest dice hasn't been done yet.
+                if (!gameManager.DoneMove[HighDice.indexDice]){
+                    // if player chose to select the player that has the possible option to move according to the highest dice.
+                    if (OnSelected.SelectedPlayer.indexTriangle == gameManager.currentObjectPossibleToMovement.indexTriangle){
+                        // if player chose to move according the other dice
+                        if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex)){
+                            // did the other dice and can't do the second dice (the higher) after , than MessageNeedToPop = true;
+                            if (GameManger.PlayerTurn == "Black"){
+                                if (gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle + Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) + gameManager.GetHighDice(), "White") == -1){
+                                    if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count == 1)
+                                        MessageNeedToPop = true;
+                                }
+                            }
+                            else{
+                                if (gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle - Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) - gameManager.GetHighDice(), "Black") == -1){
+                                    if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count == 1)
+                                        MessageNeedToPop = true;
                                 }
                             }
                         }
                     }
                 }
-                if (!MessageNeedToPop)
-                        UpdateMoventDiceNormalSituation();
-                else
-                {
-                    // show message must to do the highest dice
-                    gameManager.WarnPanel.transform.GetChild(1).transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "לפי חוק שש-בש, אם ניתן להזיז שחקן לפי הקובייה הגדולה במקום אחד, אזי חובה לשחק את הקוביה הגדולה מבין השניים";
-                    gameManager.WarnPanel.gameObject.SetActive(true);
-                    // show a message on display to tell the player that the turn pass
-                }
-                
-            }else{ // there is something in OnPlayerBlack / onPlayerWhite array (Trapped stones)
-                JumpOnOppositeStone(); // check if the participent jump on oppoise stone on the board
-
-                List<Player> currentList = gameManager.GetCurrentListAccordingToTurn(); // get current trapped stones Array according to turn's current player
-                OnSelected.SelectedPlayer.indexTriangle = TriangleIndex;
-                UpdateOnBoardRemoveFromTrapped(currentList);
-                // after remove the current trapped stone - check if there is more trapped stones from the current TypePlayer
-                if (currentList.Count == 0)
-                    UpdateMoventOnlyOneTrapped();
-                else
-                    UpdateMovementMoreThanOneTrapped();
+            }
         }
+        return MessageNeedToPop;
     }
-}
-            
         
     
     /*the function return true if the participent click on triangle for moving his current stone , else didn't click and return false*/
@@ -200,17 +190,21 @@ public class Triangle : MonoBehaviour
 
         UpdateOnSelectedOptionOnStone();
         UpdatePropertiesAfterMovement();
-        if (!gameManager.SumMovements.IsPlayerDidAllSteps())
-        { // if player didn't finish his turn beacuse did all steps.
+
+        if (!gameManager.SumMovements.IsPlayerDidAllSteps()){ // if player didn't finish his turn beacuse did all steps.
             if (gameManager.isAllPlayersCanRemoved(gameManager.BoardGame, GameManger.PlayerTurn)){
+                if (gameManager.CantMove()){
+                    gameManager.ShowMessagePassTurn = true; //reset
+                    gameManager.ShowMessagePassTurn = gameManager.NeedPassTurnMsg(); // this function check if there is an optional to take out stones by last stack/ stack according to dices
+
+                    if (gameManager.ShowMessagePassTurn)
+                        gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
+                }
                 OnSelected.SelectedPlayer.PlayerRemoveStones();
-
             }
-
-            else
-            {
-                if (!gameManager.ThereIsOptionalMove())
-                    gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
+            else{
+                if(gameManager.CantMove())
+                    gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אבנים לפי הקוביות הנתונות ולכן התור עובר ליריב"); // if we can't get stones out & can't move at all - show msg
             }
         }
     }
@@ -341,7 +335,7 @@ public class Triangle : MonoBehaviour
         }
     }
     // function return true if you are in your turn and you don't have stones out of board, else return false
-    public bool CheckTrappedTypePlayerStones(){
+    public bool NoTrappedTypePlayerStones(){
         return (GameManger.PlayerTurn == "Black" && gameManager.onPlayerBlack.Count == 0) || (GameManger.PlayerTurn == "White" && gameManager.onPlayerWhite.Count == 0);
     }
 
