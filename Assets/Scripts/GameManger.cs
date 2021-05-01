@@ -89,10 +89,10 @@ public class GameManger : MonoBehaviour
         PushStacksToBoard(); // push into an array a null stack. every stack will indicate a traingle in the board
         SetTrianglesIndex(); // set triangleIndex for each triangle on board
         SetPossibleLocOfStones();
-        onPlayerBlack = null;
-        onPlayerWhite = null;
-        BlackStonesTakeOut = null;
-        WhiteStonesTakeOut = null;
+        onPlayerBlack.Clear();
+        onPlayerWhite.Clear();
+        BlackStonesTakeOut.Clear();
+        WhiteStonesTakeOut.Clear();
     }
 
     public void SetTrianglesIndex()
