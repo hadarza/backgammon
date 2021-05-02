@@ -139,7 +139,8 @@ public class Dice : MonoBehaviour
                                 if (diceCount > 0){
                                     indexDices[index] = gameManager.GetIndexCountOnRemovingStones(GameManger.PlayerTurn, index);
                                     if (gameManager.BoardGame[indexDices[index]].Count > 0){
-                                        if (gameManager.CheckCanPutThere(indexDices[index] + 1, GameManger.PlayerTurn == "Black" ? "White" : "Black") != -1){
+                                        if (gameManager.BoardGame[indexDices[index]].Peek().PlayerType == GameManger.PlayerTurn)
+                                        {
                                             gameManager.ShowMessagePassTurn = false;
                                             break;
                                         }
