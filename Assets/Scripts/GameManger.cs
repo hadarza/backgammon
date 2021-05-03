@@ -6,6 +6,7 @@ using TMPro;
 public class GameManger : MonoBehaviour
 {
     public List<Stack<Player>> BoardGame;
+    Stack<Player> usePlayerStack;
     [SerializeField] Player[] playerDefault;
     [SerializeField] Material source;
 
@@ -70,29 +71,59 @@ public class GameManger : MonoBehaviour
     public Player currentObjectPossibleToMovement;
 
     int canPutInDice1, canPutInDice2, canPutInDice3, canPutInDice4;
+    public List<List<Vector3>> saveFirstLocOfPlayers;
 
     private void Awake(){
         BoardGame = new List<Stack<Player>>();
+        saveFirstLocOfPlayers = new List<List<Vector3>>();
     }
     private void Start()
     {
         diceSides = Resources.LoadAll<Sprite>("DiceSides/");
         newMaterialSelected = new Material(source);
 
-        RestartGame();
-    }
+        LoadingGame();
 
-    public void RestartGame()
+        for (int boardIndex = 0; boardIndex < BOARD_TRIANGLES; boardIndex++)
+        {
+            saveFirstLocOfPlayers.Add(new List<Vector3>());
+        }
+        for (int i = 0; i < BoardGame.Count; i++){
+            foreach (Player p in BoardGame[i]){
+                // saving location of startLoc of stones
+                saveFirstLocOfPlayers[i].Add(p.transform.localPosition);
+            }
+        }
+    }
+    void LoadingGame()
     {
         canRoll = true;
         BoardGame = new List<Stack<Player>>();
         PushStacksToBoard(); // push into an array a null stack. every stack will indicate a traingle in the board
         SetTrianglesIndex(); // set triangleIndex for each triangle on board
         SetPossibleLocOfStones();
+    }
+    public void RestartGame()
+    {
+        LoadingGame();
         onPlayerBlack.Clear();
         onPlayerWhite.Clear();
         BlackStonesTakeOut.Clear();
         WhiteStonesTakeOut.Clear();
+        //for (int i = 0; i < BoardGame.Count; i++){
+        //    for(int j = 0;j < BoardGame[i].Count;j++){
+        //        // saving location of startLoc of stones
+        //        BoardGame[i].Peek().gameObject.transform.localPosition = saveFirstLocOfPlayers[i][j];
+        //        usePlayerStack.Push(BoardGame[i].Pop());
+        //    }
+        //    foreach (Player p in usePlayerStack)
+        //    {
+        //        BoardGame[i].Push(p);
+        //        usePlayerStack.Pop();
+        //    }
+        //}
+
+        
     }
 
     public void SetTrianglesIndex()
@@ -142,8 +173,9 @@ public class GameManger : MonoBehaviour
             for (int playerIndex = 0; playerIndex < playerDefault.Length; playerIndex++){
                 /* if player index from playerDefault array is equal to board traingle index,
                 than add to the stack the player*/
-                if (playerDefault[playerIndex].indexTriangle - 1 == boardIndex)
+                if (playerDefault[playerIndex].indexTriangle - 1 == boardIndex){
                     BoardGame[boardIndex].Push(playerDefault[playerIndex]);
+                }
             }
         }
     }
