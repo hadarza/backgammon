@@ -139,11 +139,18 @@ public class Dice : MonoBehaviour
                                 if (diceCount > 0){
                                     indexDices[index] = gameManager.GetIndexCountOnRemovingStones(GameManger.PlayerTurn, index);
                                     if (gameManager.BoardGame[indexDices[index]].Count > 0){
-                                        if (gameManager.BoardGame[indexDices[index]].Peek().PlayerType == GameManger.PlayerTurn)
-                                        {
+                                        if (gameManager.BoardGame[indexDices[index]].Peek().PlayerType == GameManger.PlayerTurn){
                                             gameManager.ShowMessagePassTurn = false;
                                             break;
+                                        }else{
+                                            gameManager.TakeCareOnNotOnStackAsDice(indexDice, OnSelected.SelectedPlayer.PlayerType, OnSelected.SelectedPlayer);
+                                            if (gameManager.RectanglesShowTakeOut[0].activeInHierarchy || gameManager.RectanglesShowTakeOut[1].activeInHierarchy)
+                                                break;
                                         }
+                                    }else{
+                                        gameManager.TakeCareOnNotOnStackAsDice(indexDice, OnSelected.SelectedPlayer.PlayerType, OnSelected.SelectedPlayer);
+                                        if (gameManager.RectanglesShowTakeOut[0].activeInHierarchy || gameManager.RectanglesShowTakeOut[1].activeInHierarchy)
+                                            break;
                                     }
                                 }
                                 index++;

@@ -14,7 +14,6 @@ public class Player : MonoBehaviour
     List<Player> currentList;
     public int indexDiceToRemove;
     int index;
-    int locStart;
 
     private void Start()
     {
@@ -112,7 +111,7 @@ public class Player : MonoBehaviour
 
     public void UpdateListenersOnDeselect(){
         //Hide triangle of stones for removing from the board & hide the triangles , so after deselect, we won't see the triangles movements.
-        ToggleHideShowRectangle(false);
+        gameManager.ToggleHideShowRectangle(false);
         gameManager.HideAllTriangles();
 
         //remove Onselected Listeners
@@ -181,22 +180,22 @@ public class Player : MonoBehaviour
                                                 else
                                                     indexDiceToRemove = 1;
                                             }
-                                            ToggleHideShowRectangle(true);
+                                            gameManager.ToggleHideShowRectangle(true);
                                             break;
                                         }
                                     }else{
                                         indexDiceToRemove = -1;
-                                        ToggleHideShowRectangle(false);
+                                        gameManager.ToggleHideShowRectangle(false);
                                     }
                                 }else{
-                                    TakeCareOnNotOnStackAsDice(i);
+                                    gameManager.TakeCareOnNotOnStackAsDice(i,PlayerType,this);
                                     if (gameManager.RectanglesShowTakeOut[0].activeInHierarchy || gameManager.RectanglesShowTakeOut[1].activeInHierarchy)
                                         break;
                                 }
                         }
                             // if we don't have anything from 6 to diceIndex than have to take from the last stack that exist
                             else{
-                                TakeCareOnNotOnStackAsDice(i);
+                                gameManager.TakeCareOnNotOnStackAsDice(i,PlayerType,this);
                                 if (gameManager.RectanglesShowTakeOut[0].activeInHierarchy || gameManager.RectanglesShowTakeOut[1].activeInHierarchy)
                                     break;
                             }
@@ -206,118 +205,4 @@ public class Player : MonoBehaviour
             }
         }
     }
-
-    public void TakeCareOnNotOnStackAsDice(int i)
-    {
-        string opposite = PlayerType == "Black" ? "White" : "Black";
-        int loc = PlayerType == "Black" ? OnSelected.SelectedPlayer.indexTriangle + gameManager.dicesCount[i] : OnSelected.SelectedPlayer.indexTriangle - gameManager.dicesCount[i];
-
-        switch (PlayerType)
-        {
-            case "White":
-                locStart = 6;
-                break;
-            case "Black":
-                locStart = 19;
-                break;
-
-        }
-        if (locStart == 6 || locStart == 19)
-        {
-            if (IsStacksEmptyUntilLocation(gameManager.dicesCount[i], locStart))
-            {
-                if (OnSelected.SelectedPlayer.indexTriangle == gameManager.GetLastStackFull(locStart, GameManger.PlayerTurn))
-                {
-                    indexDiceToRemove = i;
-                    if (gameManager.DoneMove[i])
-                    {
-                        if (i == 1)
-                            indexDiceToRemove = 0;
-                        else
-                            indexDiceToRemove = 1;
-                    }
-                    ToggleHideShowRectangle(true);
-                }
-                else
-                {
-                    indexDiceToRemove = -1;
-                    ToggleHideShowRectangle(false);
-                }
-
-            }
-            else
-            {
-                // check if there is optional to do move by this dice on all board.
-                // if so - ok. If not, need to check the other dice.
-                // if no dices can be moved - show message pass turn
-
-                /*TODO - check - what if can remove the other dice without moving*/
-
-                if (!gameManager.ThereIsOptionalMoveByDice(i))
-                {
-                    // if can't move any of dices + can't get them out, than pass turn
-                    if (!ThereIsOptionRemoveOrMove())
-                    {
-                        gameManager.ShowMessagePassTurn = gameManager.NeedPassTurnMsg();
-                        if (gameManager.ShowMessagePassTurn)
-                        {
-                            gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
-                            indexDiceToRemove = -1;
-                            ToggleHideShowRectangle(false);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public bool ThereIsOptionRemoveOrMove()
-    {
-        for (int indexCount= 0; indexCount < gameManager.dicesCount.Length; indexCount++){
-            int index = GameManger.PlayerTurn == "White" ? gameManager.dicesCount[indexCount] : GameManger.BOARD_TRIANGLES - gameManager.dicesCount[indexCount];
-            // if dice count is higher than 0
-            if (gameManager.dicesCount[indexCount] > 0){
-                if (gameManager.ThereIsOptionalMoveByDice(indexCount) || gameManager.BoardGame[index - 1].Count > 0)
-                    return true;
-            }
-        }
-        return false;
-    }
-
-
-    // Toggle - show/hide Triangle for helping player where to click in order to remove stones from board
-    public void ToggleHideShowRectangle(bool IsShown){
-        // if you have at least one stone on the stack of countDice
-        if (GameManger.PlayerTurn == "Black")
-            gameManager.RectanglesShowTakeOut[0].SetActive(IsShown);
-        else
-            gameManager.RectanglesShowTakeOut[1].SetActive(IsShown);
-    }
-
-    // This function return true if in stack of stones 
-    public bool IsStacksEmptyUntilLocation(int locationDice, int locationStart)
-    {
-        if (locationStart == 6){ 
-            for (int i = locationStart; i >= locationDice; i--){
-                if (gameManager.BoardGame[i - 1].Count > 0){
-                    if(gameManager.BoardGame[i - 1].Peek().PlayerType == PlayerType)
-                        return false;
-                }
-            }
-        }
-        else{
-            //locationStart = 19
-            for (int i = locationStart; i <= GameManger.BOARD_TRIANGLES - locationDice; i++) {
-                if (gameManager.BoardGame[i - 1].Count > 0){
-                    if (gameManager.BoardGame[i - 1].Peek().PlayerType == PlayerType)
-                        return false;
-
-                }
-            }
-        }
-        return true;
-    }
-
-
-   
 }

@@ -60,7 +60,7 @@ public class rectangleTakeOutStones : MonoBehaviour
         OnSelected.SelectedPlayer.transform.localPosition = currentTakeOutloc[currentTakeOutList.Count - 1];
         OnSelected.SelectedPlayer.transform.rotation = Quaternion.Euler(new Vector3(270, 0, 0));
         gameObject.SetActive(false); // hide rectangle
-        OnSelected.SelectedPlayer.ToggleHideShowRectangle(false); // hide triangle selected after moving a stone for there
+        gameManager.ToggleHideShowRectangle(false); // hide triangle selected after moving a stone for there
         gameManager.HideAllTriangles();
 
         gameManager.indexCountMove++;

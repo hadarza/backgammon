@@ -6,7 +6,7 @@ using TMPro;
 public class GameManger : MonoBehaviour
 {
     public List<Stack<Player>> BoardGame;
-    Stack<Player> usePlayerStack;
+    List<Stack<Player>> usePlayerStack;
     [SerializeField] Player[] playerDefault;
     [SerializeField] Material source;
 
@@ -110,18 +110,28 @@ public class GameManger : MonoBehaviour
         onPlayerWhite.Clear();
         BlackStonesTakeOut.Clear();
         WhiteStonesTakeOut.Clear();
-        //for (int i = 0; i < BoardGame.Count; i++){
-        //    for(int j = 0;j < BoardGame[i].Count;j++){
+        for (int i = 0; i < BoardGame.Count; i++){
+        int jIndex = BoardGame[i].Count;
+            for(int j = 0;j < jIndex; j++){
         //        // saving location of startLoc of stones
-        //        BoardGame[i].Peek().gameObject.transform.localPosition = saveFirstLocOfPlayers[i][j];
-        //        usePlayerStack.Push(BoardGame[i].Pop());
-        //    }
-        //    foreach (Player p in usePlayerStack)
-        //    {
-        //        BoardGame[i].Push(p);
-        //        usePlayerStack.Pop();
-        //    }
-        //}
+                BoardGame[i].Peek().gameObject.transform.localPosition = saveFirstLocOfPlayers[i][j];
+                usePlayerStack[i].Push(BoardGame[i].Pop());
+            }
+
+           // for (int i = 0; i < BoardGame.Count; i++)
+           // {
+           //     int jIndex = BoardGame[i].Count;
+           //     for (int j = 0; j < jIndex; j++)
+           //     {
+
+          //      }
+          //  }
+
+           // foreach (Stack<Player> Stackp in usePlayerStack){
+          //      BoardGame[i].Push(p);
+         //       usePlayerStack.Pop();
+         //   }
+        }
 
         
     }
@@ -485,11 +495,123 @@ public class GameManger : MonoBehaviour
             }
         }
     }
+
+    public void TakeCareOnNotOnStackAsDice(int i,string PlayerType,Player player)
+    {
+        int locStart = 0;
+        string opposite = PlayerType == "Black" ? "White" : "Black";
+        int loc = PlayerType == "Black" ? OnSelected.SelectedPlayer.indexTriangle + dicesCount[i] : OnSelected.SelectedPlayer.indexTriangle - dicesCount[i];
+
+        switch (PlayerType)
+        {
+            case "White":
+                locStart = 6;
+                break;
+            case "Black":
+                locStart = 19;
+                break;
+        }
+
+        if (locStart == 6 || locStart == 19)
+        {
+            if (IsStacksEmptyUntilLocation(dicesCount[i], locStart, PlayerType)){
+                if (OnSelected.SelectedPlayer.indexTriangle == GetLastStackFull(locStart, GameManger.PlayerTurn)){
+                    player.indexDiceToRemove = i;
+                    if (DoneMove[i]){
+                        if (i == 1)
+                            player.indexDiceToRemove = 0;
+                        else
+                            player.indexDiceToRemove = 1;
+                    }
+                    ToggleHideShowRectangle(true);
+                }
+                else{
+                    player.indexDiceToRemove = -1;
+                    ToggleHideShowRectangle(false);
+                }
+
+            }else{
+                // check if there is optional to do move by this dice on all board.
+                // if so - ok. If not, need to check the other dice.
+                // if no dices can be moved - show message pass turn
+
+                /*TODO - check - what if can remove the other dice without moving*/
+
+                if (!ThereIsOptionalMoveByDice(i)){
+                    // if can't move any of dices + can't get them out, than pass turn
+                    if (!ThereIsOptionRemoveOrMove()){
+                        ShowMessagePassTurn = NeedPassTurnMsg();
+                        if (ShowMessagePassTurn){
+                            ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
+                            player.indexDiceToRemove = -1;
+                            ToggleHideShowRectangle(false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Toggle - show/hide Triangle for helping player where to click in order to remove stones from board
+    public void ToggleHideShowRectangle(bool IsShown)
+    {
+        // if you have at least one stone on the stack of countDice
+        if (GameManger.PlayerTurn == "Black")
+            RectanglesShowTakeOut[0].SetActive(IsShown);
+        else
+            RectanglesShowTakeOut[1].SetActive(IsShown);
+    }
+
+    // This function return true if in stack of stones 
+    public bool IsStacksEmptyUntilLocation(int locationDice, int locationStart,string PlayerType)
+    {
+        if (locationStart == 6)
+        {
+            for (int i = locationStart; i >= locationDice; i--)
+            {
+                if (BoardGame[i - 1].Count > 0)
+                {
+                    if (BoardGame[i - 1].Peek().PlayerType == PlayerType)
+                        return false;
+                }
+            }
+        }
+        else
+        {
+            //locationStart = 19
+            for (int i = locationStart; i <= GameManger.BOARD_TRIANGLES - locationDice; i++)
+            {
+                if (BoardGame[i - 1].Count > 0)
+                {
+                    if (BoardGame[i - 1].Peek().PlayerType == PlayerType)
+                        return false;
+
+                }
+            }
+        }
+        return true;
+    }
+
     // search on TrappedList , if a stone is found. If so, return true. else, return false.
     public bool IsPlayerFoundOnTrapped(List<Player> TrappedList, Player player){
         foreach (Player p in TrappedList){
             if (p == player)
                 return true;
+        }
+        return false;
+    }
+
+    public bool ThereIsOptionRemoveOrMove()
+    {
+        for (int indexCount = 0; indexCount < dicesCount.Length; indexCount++)
+        {
+            int index = GameManger.PlayerTurn == "White" ? dicesCount[indexCount] : GameManger.BOARD_TRIANGLES - dicesCount[indexCount];
+            // if dice count is higher than 0
+            if (dicesCount[indexCount] > 0)
+            {
+                if (ThereIsOptionalMoveByDice(indexCount) || BoardGame[index - 1].Count > 0)
+                    return true;
+            }
         }
         return false;
     }
