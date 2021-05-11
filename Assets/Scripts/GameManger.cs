@@ -6,6 +6,8 @@ using TMPro;
 public class GameManger : MonoBehaviour
 {
     public List<Stack<Player>> BoardGame;
+    public List<Stack<Player>> copyBoardGame;
+
     List<Stack<Player>> usePlayerStack;
     [SerializeField] Player[] playerDefault;
     [SerializeField] Material source;
@@ -93,6 +95,7 @@ public class GameManger : MonoBehaviour
                 // saving location of startLoc of stones
                 saveFirstLocOfPlayers[i].Add(p.transform.localPosition);
             }
+
         }
     }
     void LoadingGame()
@@ -105,35 +108,31 @@ public class GameManger : MonoBehaviour
     }
     public void RestartGame()
     {
+        int jIndex = 0;
         LoadingGame();
         onPlayerBlack.Clear();
         onPlayerWhite.Clear();
         BlackStonesTakeOut.Clear();
         WhiteStonesTakeOut.Clear();
-        for (int i = 0; i < BoardGame.Count; i++){
-        int jIndex = BoardGame[i].Count;
-            for(int j = 0;j < jIndex; j++){
-        //        // saving location of startLoc of stones
-                BoardGame[i].Peek().gameObject.transform.localPosition = saveFirstLocOfPlayers[i][j];
-                usePlayerStack[i].Push(BoardGame[i].Pop());
+        for (int i = 0; i < copyBoardGame.Count; i++)
+        {
+            for (int j = 0; j < saveFirstLocOfPlayers.Count; j++)
+            {
+                //        // saving location of startLoc of stones
+                copyBoardGame[i].Peek().gameObject.transform.localPosition = saveFirstLocOfPlayers[i][j];
+                usePlayerStack[i].Push(copyBoardGame[i].Pop());
             }
-
-           // for (int i = 0; i < BoardGame.Count; i++)
-           // {
-           //     int jIndex = BoardGame[i].Count;
-           //     for (int j = 0; j < jIndex; j++)
-           //     {
-
-          //      }
-          //  }
-
-           // foreach (Stack<Player> Stackp in usePlayerStack){
-          //      BoardGame[i].Push(p);
-         //       usePlayerStack.Pop();
-         //   }
         }
 
-        
+        // foreach (Stack<Player> Stackp in usePlayerStack){
+        for (int z = 0; z < usePlayerStack.Count; z++) { 
+            foreach(Player p in usePlayerStack[z])
+            {
+                BoardGame[z].Push(p);
+                copyBoardGame[z].Push(p);
+                usePlayerStack[z].Pop();
+            }
+        }
     }
 
     public void SetTrianglesIndex()
@@ -170,6 +169,7 @@ public class GameManger : MonoBehaviour
     void PushStacksToBoard(){
         for (int boardIndex = 0; boardIndex < BOARD_TRIANGLES; boardIndex++){
             BoardGame.Add(new Stack<Player>());
+            copyBoardGame.Add(new Stack<Player>());
         }
         AddDefaultBoard();
     }
@@ -185,6 +185,7 @@ public class GameManger : MonoBehaviour
                 than add to the stack the player*/
                 if (playerDefault[playerIndex].indexTriangle - 1 == boardIndex){
                     BoardGame[boardIndex].Push(playerDefault[playerIndex]);
+                    copyBoardGame[boardIndex].Push(playerDefault[playerIndex]);
                 }
             }
         }
@@ -499,7 +500,6 @@ public class GameManger : MonoBehaviour
     public void TakeCareOnNotOnStackAsDice(int i,string PlayerType,Player player)
     {
         int locStart = 0;
-        string opposite = PlayerType == "Black" ? "White" : "Black";
         int loc = PlayerType == "Black" ? OnSelected.SelectedPlayer.indexTriangle + dicesCount[i] : OnSelected.SelectedPlayer.indexTriangle - dicesCount[i];
 
         switch (PlayerType)
@@ -836,16 +836,20 @@ public class GameManger : MonoBehaviour
         if (PlayerType == "White"){
             foreach (Stack<Player> s in playerList){
                 if (s.Count > 0){
-                    if (s.Peek().indexTriangle > 6 && s.Peek().PlayerType == PlayerType)
+                    if(s.Peek().indexTriangle != -1){
+                        if (s.Peek().indexTriangle > 6 && s.Peek().PlayerType == PlayerType)
                         return false;
+                    }
                 }
             }
             return true;
         }else{
             foreach (Stack<Player> s in playerList){
                 if (s.Count > 0){
-                    if (s.Peek().indexTriangle < 19 && s.Peek().PlayerType == PlayerType)
-                        return false;
+                    if (s.Peek().indexTriangle != -1){
+                        if (s.Peek().indexTriangle < 19 && s.Peek().PlayerType == PlayerType)
+                            return false;
+                    }
                 }
             }
             return true;
