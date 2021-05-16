@@ -521,9 +521,9 @@ public class GameManger : MonoBehaviour
                 if (!DoneMove[index]){
                     if (BoardGame[indexDices[index]].Count > 0) {
                         // player can remove this stone out - therefore don't show Passturn Message
-                        if (CheckCanPutThere(indexDices[index], GameManger.PlayerTurn == "Black" ? "White" : "Black") != -1) { 
-                            ShowMessagePassTurn = false;
-                            break;
+                        if (BoardGame[indexDices[index]].Peek().PlayerType == GameManger.PlayerTurn) {
+                                ShowMessagePassTurn = false;
+                                break;
                         }
 
                         else

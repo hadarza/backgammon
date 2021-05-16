@@ -273,12 +273,16 @@ public class Player : MonoBehaviour
 
     public bool ThereIsOptionRemoveOrMove()
     {
-        for (int indexCount= 0; indexCount < gameManager.dicesCount.Length; indexCount++){
-            int index = GameManger.PlayerTurn == "White" ? gameManager.dicesCount[indexCount] : GameManger.BOARD_TRIANGLES - gameManager.dicesCount[indexCount];
+        for (int indexCount = 0; indexCount < gameManager.dicesCount.Length; indexCount++) {
+            int index = GameManger.PlayerTurn == "White" ? gameManager.dicesCount[indexCount] : GameManger.BOARD_TRIANGLES - gameManager.dicesCount[indexCount] + 1;
             // if dice count is higher than 0
-            if (gameManager.dicesCount[indexCount] > 0){
-                if (gameManager.ThereIsOptionalMoveByDice(indexCount) || gameManager.BoardGame[index - 1].Count > 0)
+            if (gameManager.dicesCount[indexCount] > 0) {
+                if (gameManager.ThereIsOptionalMoveByDice(indexCount))
                     return true;
+                if (gameManager.BoardGame[index - 1].Count > 0){
+                    if (gameManager.BoardGame[index - 1].Peek().PlayerType == GameManger.PlayerTurn)
+                        return true;
+                }
             }
         }
         return false;
