@@ -198,7 +198,7 @@ public class Triangle : MonoBehaviour
                     gameManager.ShowMessagePassTurn = gameManager.NeedPassTurnMsg(); // this function check if there is an optional to take out stones by last stack/ stack according to dices
 
                     if (gameManager.ShowMessagePassTurn)
-                        gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
+                        gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר לי");
                 }
                 OnSelected.SelectedPlayer.PlayerRemoveStones();
             }

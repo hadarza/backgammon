@@ -19106,7 +19106,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1842988548
 Transform:
   m_ObjectHideFlags: 0
@@ -20851,6 +20851,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TagString
       value: Stone
+      objectReference: {fileID: 0}
+    - target: {fileID: 1663534572489754241, guid: 03777c7393dca2b41a1334fa230d517f,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 03777c7393dca2b41a1334fa230d517f, type: 3}

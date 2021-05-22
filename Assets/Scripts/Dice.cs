@@ -142,7 +142,15 @@ public class Dice : MonoBehaviour
                                         if (gameManager.BoardGame[indexDices[index]].Peek().PlayerType == GameManger.PlayerTurn){
                                             gameManager.ShowMessagePassTurn = false;
                                             break;
+                                        }else{
+                                            gameManager.TakeCareOnNotOnStackAsDice(indexDice, OnSelected.SelectedPlayer.PlayerType, OnSelected.SelectedPlayer);
+                                            if (gameManager.RectanglesShowTakeOut[0].activeInHierarchy || gameManager.RectanglesShowTakeOut[1].activeInHierarchy)
+                                                break;
                                         }
+                                    }else{
+                                        gameManager.TakeCareOnNotOnStackAsDice(indexDice, OnSelected.SelectedPlayer.PlayerType, OnSelected.SelectedPlayer);
+                                        if (gameManager.RectanglesShowTakeOut[0].activeInHierarchy || gameManager.RectanglesShowTakeOut[1].activeInHierarchy)
+                                            break;
                                     }
                                 }
                                 index++;

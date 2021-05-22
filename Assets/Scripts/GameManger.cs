@@ -6,6 +6,9 @@ using TMPro;
 public class GameManger : MonoBehaviour
 {
     public List<Stack<Player>> BoardGame;
+    public List<Stack<Player>> copyBoardGame;
+
+    List<Stack<Player>> usePlayerStack;
     [SerializeField] Player[] playerDefault;
     [SerializeField] Material source;
 
@@ -70,29 +73,103 @@ public class GameManger : MonoBehaviour
     public Player currentObjectPossibleToMovement;
 
     int canPutInDice1, canPutInDice2, canPutInDice3, canPutInDice4;
+    public List<List<Vector3>> saveFirstLocOfPlayers;
+     Vector3[] originalVector3ObjectsBlack;
+    Vector3[] originalVector3ObjectsWhite;
 
+    string winner;
     private void Awake(){
         BoardGame = new List<Stack<Player>>();
+        saveFirstLocOfPlayers = new List<List<Vector3>>();
+        originalVector3ObjectsBlack = new Vector3[2];
+        originalVector3ObjectsWhite = new Vector3[2];
     }
     private void Start()
     {
         diceSides = Resources.LoadAll<Sprite>("DiceSides/");
         newMaterialSelected = new Material(source);
 
-        RestartGame();
-    }
+        originalVector3ObjectsWhite[0] = new Vector3(-7.9f, 2.2f, -4.8f);
+        originalVector3ObjectsWhite[1] = new Vector3(-2.9f, 2.2f, -4.8f);
 
-    public void RestartGame()
+        originalVector3ObjectsBlack[0] = new Vector3(1.9f, 2.2f, 10.8f);
+        originalVector3ObjectsBlack[1] = new Vector3(6.9f, 2.2f, 10.8f);
+
+
+        LoadingGame();
+
+        for (int boardIndex = 0; boardIndex < BOARD_TRIANGLES; boardIndex++)
+        {
+            saveFirstLocOfPlayers.Add(new List<Vector3>());
+        }
+        for (int i = 0; i < BoardGame.Count; i++){
+            foreach (Player p in BoardGame[i]){
+                // saving location of startLoc of stones
+                saveFirstLocOfPlayers[i].Add(p.transform.localPosition);
+            }
+
+        }
+    }
+    void LoadingGame()
     {
         canRoll = true;
         BoardGame = new List<Stack<Player>>();
+        copyBoardGame = new List<Stack<Player>>();
+        usePlayerStack = new List<Stack<Player>>();
         PushStacksToBoard(); // push into an array a null stack. every stack will indicate a traingle in the board
         SetTrianglesIndex(); // set triangleIndex for each triangle on board
         SetPossibleLocOfStones();
+    }
+    public void RestartGame()
+    {
+        // LoadingGame();
         onPlayerBlack.Clear();
         onPlayerWhite.Clear();
         BlackStonesTakeOut.Clear();
         WhiteStonesTakeOut.Clear();
+        for (int i = 0; i < copyBoardGame.Count; i++)
+        {
+            for (int j = 0; j < saveFirstLocOfPlayers[i].Count; j++)
+            {
+                // saving location of startLoc of stones
+                copyBoardGame[i].Peek().gameObject.transform.localPosition = saveFirstLocOfPlayers[i][j];
+                usePlayerStack[i].Push(copyBoardGame[i].Pop());
+            }
+        }
+
+        // foreach (Stack<Player> Stackp in usePlayerStack){
+        for (int z = 0; z < usePlayerStack.Count; z++) {
+            int countPlayer = usePlayerStack[z].Count;
+            for (int player = 0; player < countPlayer; player++){
+                BoardGame[z].Push(usePlayerStack[z].Peek());
+                copyBoardGame[z].Push(usePlayerStack[z].Peek());
+                usePlayerStack[z].Peek().gameObject.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0)); // change rotation to (0,0,0)
+                usePlayerStack[z].Peek().gameObject.GetComponent<Renderer>().material = NormalColor; // change color matriel to normal
+                usePlayerStack[z].Peek().gameObject.GetComponent<Player>().indexTriangle = z + 1;
+                usePlayerStack[z].Pop();
+            }
+        }
+
+        for (int i = 0; i < DoneMove.Length; i++){
+            DoneMove[i] = false;
+            dicesCount[i] = 0;
+        }
+
+        //reset location and rotation of dices
+        for (int j = 0; j < dices.Length; j++){
+            if (winner == "Black"){
+                dices[j].transform.position = originalVector3ObjectsBlack[j];
+                dices[j].transform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+            else{
+                dices[j].transform.position = originalVector3ObjectsWhite[j];
+                dices[j].transform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+        }
+        CanvasVictory.gameObject.SetActive(false);
+        RollFirstTime = false;
+        GameManger.canRoll = true;
+
     }
 
     public void SetTrianglesIndex()
@@ -129,6 +206,8 @@ public class GameManger : MonoBehaviour
     void PushStacksToBoard(){
         for (int boardIndex = 0; boardIndex < BOARD_TRIANGLES; boardIndex++){
             BoardGame.Add(new Stack<Player>());
+            copyBoardGame.Add(new Stack<Player>());
+            usePlayerStack.Add(new Stack<Player>());
         }
         AddDefaultBoard();
     }
@@ -142,8 +221,10 @@ public class GameManger : MonoBehaviour
             for (int playerIndex = 0; playerIndex < playerDefault.Length; playerIndex++){
                 /* if player index from playerDefault array is equal to board traingle index,
                 than add to the stack the player*/
-                if (playerDefault[playerIndex].indexTriangle - 1 == boardIndex)
+                if (playerDefault[playerIndex].indexTriangle - 1 == boardIndex){
                     BoardGame[boardIndex].Push(playerDefault[playerIndex]);
+                    copyBoardGame[boardIndex].Push(playerDefault[playerIndex]);
+                }
             }
         }
     }
@@ -446,18 +527,119 @@ public class GameManger : MonoBehaviour
                 triangles[canPutInDice3 - 1].gameObject.SetActive(true);
             else if ((canPutInDice3 == -1 && canPutInDice4 != -1) || (canPutInDice3 != -1 && canPutInDice4 != -1))
                 triangles[canPutInDice4 - 1].gameObject.SetActive(true);
-            else
-            {
+            else{
                 ShowErrorPassTurn("אין לך היכן להניח את האבנים הכלואות ולכן התור עובר ליריב");
 
             }
         }
     }
+
+    public void TakeCareOnNotOnStackAsDice(int i,string PlayerType,Player player)
+    {
+        int locStart = 0;
+        int loc = PlayerType == "Black" ? OnSelected.SelectedPlayer.indexTriangle + dicesCount[i] : OnSelected.SelectedPlayer.indexTriangle - dicesCount[i];
+
+        switch (PlayerType)
+        {
+            case "White":
+                locStart = 6;
+                break;
+            case "Black":
+                locStart = 19;
+                break;
+        }
+
+        if (locStart == 6 || locStart == 19)
+        {
+            if (IsStacksEmptyUntilLocation(dicesCount[i], locStart, PlayerType)){
+                if (OnSelected.SelectedPlayer.indexTriangle == GetLastStackFull(locStart, GameManger.PlayerTurn)){
+                    player.indexDiceToRemove = i;
+                    if (DoneMove[i]){
+                        if (i == 1)
+                            player.indexDiceToRemove = 0;
+                        else
+                            player.indexDiceToRemove = 1;
+                    }
+                    ToggleHideShowRectangle(true);
+                }
+                else{
+                    player.indexDiceToRemove = -1;
+                    ToggleHideShowRectangle(false);
+                }
+
+            }else{
+                // check if there is optional to do move by this dice on all board.
+                // if so - ok. If not, need to check the other dice.
+                // if no dices can be moved - show message pass turn
+
+                /*TODO - check - what if can remove the other dice without moving*/
+
+                if (!ThereIsOptionalMoveByDice(i)){
+                    // if can't move any of dices + can't get them out, than pass turn
+                    if (!ThereIsOptionRemoveOrMove()){
+                        ShowMessagePassTurn = NeedPassTurnMsg();
+                        if (ShowMessagePassTurn){
+                            ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
+                            player.indexDiceToRemove = -1;
+                            ToggleHideShowRectangle(false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Toggle - show/hide Triangle for helping player where to click in order to remove stones from board
+    public void ToggleHideShowRectangle(bool IsShown)
+    {
+        // if you have at least one stone on the stack of countDice
+        if (GameManger.PlayerTurn == "Black") RectanglesShowTakeOut[0].SetActive(IsShown);
+        else RectanglesShowTakeOut[1].SetActive(IsShown);
+    }
+
+    // This function return true if in stack of stones 
+    public bool IsStacksEmptyUntilLocation(int locationDice, int locationStart,string PlayerType){
+        if (locationStart == 6){
+            for (int i = locationStart; i >= locationDice; i--){
+                if (BoardGame[i - 1].Count > 0){
+                    if (BoardGame[i - 1].Peek().PlayerType == PlayerType)
+                        return false;
+                }
+            }
+        }
+        else{
+            //locationStart = 19
+            for (int i = locationStart; i <= GameManger.BOARD_TRIANGLES - locationDice; i++){
+                if (BoardGame[i - 1].Count > 0){
+                    if (BoardGame[i - 1].Peek().PlayerType == PlayerType)
+                        return false;
+
+                }
+            }
+        }
+        return true;
+    }
+
     // search on TrappedList , if a stone is found. If so, return true. else, return false.
     public bool IsPlayerFoundOnTrapped(List<Player> TrappedList, Player player){
         foreach (Player p in TrappedList){
             if (p == player)
                 return true;
+        }
+        return false;
+    }
+
+    public bool ThereIsOptionRemoveOrMove()
+    {
+        for (int indexCount = 0; indexCount < dicesCount.Length; indexCount++)
+        {
+            int index = GameManger.PlayerTurn == "White" ? dicesCount[indexCount] : GameManger.BOARD_TRIANGLES - dicesCount[indexCount];
+            // if dice count is higher than 0
+            if (dicesCount[indexCount] > 0)
+            {
+                if (ThereIsOptionalMoveByDice(indexCount) || BoardGame[index - 1].Count > 0)
+                    return true;
+            }
         }
         return false;
     }
@@ -486,8 +668,7 @@ public class GameManger : MonoBehaviour
     public int GetIndexCountOnRemovingStones(string PlayerType, int i)
     {
         int IndexCheck = 0;
-        switch (PlayerType)
-        {
+        switch (PlayerType){
             case "White":
                 IndexCheck = dicesCount[i] - 1;
                 break;
@@ -499,8 +680,7 @@ public class GameManger : MonoBehaviour
         return IndexCheck;
     }
 
-    public bool CantMove()
-    {
+    public bool CantMove(){
         return (!ThereIsOptionalMove() && GetCurrentListAccordingToTurn().Count == 0);
     }
 
@@ -528,6 +708,7 @@ public class GameManger : MonoBehaviour
 
                         else
                         {
+                            print("here2");
                             locStart = GameManger.PlayerTurn == "White" ? 6 : 19;
                             TriangleCount = GameManger.PlayerTurn == "White" ? diceCount : BOARD_TRIANGLES - diceCount + 1;
                             // check if there is an optional to remove some stone by taking out the last stone in last stack
@@ -540,6 +721,7 @@ public class GameManger : MonoBehaviour
                             }
                         }
                     }else{
+                        print("here");
                         // TODO- check!
                         locStart = GameManger.PlayerTurn == "White" ? 6 : 19;
                         TriangleCount = GameManger.PlayerTurn == "White" ? diceCount : BOARD_TRIANGLES - diceCount + 1;
@@ -562,14 +744,12 @@ public class GameManger : MonoBehaviour
     // This function return true if there is an option to remove stone from the last index in stack on the list of the 6 stacks that we can get out stones from there
     public bool IsThereOptionalToMoveFromLast(int locStart, int diceCount)
     {
-        if (locStart == 6)
-        {
+        if (locStart == 6){
             if (GetLastStackFull(locStart, PlayerTurn) <= diceCount)
                 return true;
             return false;
         }
-        else
-        {
+        else{
             // locStart = 19
             if (GetLastStackFull(locStart, PlayerTurn) >= diceCount)
                 return true;
@@ -579,24 +759,18 @@ public class GameManger : MonoBehaviour
 
     public int GetLastStackFull(int locationStart,string PlayerType)
     {
-        if (locationStart == 6)
-        {
-            for (int i = locationStart; i > locationStart - 6; i--)
-            {
-                if (BoardGame[i - 1].Count > 0)
-                {
+        if (locationStart == 6){
+            for (int i = locationStart; i > locationStart - 6; i--){
+                if (BoardGame[i - 1].Count > 0){
                     if (BoardGame[i - 1].Peek().PlayerType == PlayerType)
                         return i;
                 }
             }
         }
-        else
-        {
+        else{
             //locationStart = 19
-            for (int i = locationStart; i <= GameManger.BOARD_TRIANGLES; i++)
-            {
-                if (BoardGame[i - 1].Count > 0)
-                {
+            for (int i = locationStart; i <= GameManger.BOARD_TRIANGLES; i++){
+                if (BoardGame[i - 1].Count > 0){
                     if (BoardGame[i - 1].Peek().PlayerType == PlayerType)
                         return i;
                 }
@@ -629,6 +803,7 @@ public class GameManger : MonoBehaviour
         if (OutList.Count == 15){
             CanvasVictory.gameObject.SetActive(true);
             CanvasVictory.gameObject.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = "מנצח המשחק: " + (OutList.Count == onPlayerBlack.Count ? "שחקן שחור" : "שחקן לבן");
+            winner = OutList.Count == onPlayerBlack.Count ? "Black" : "White";
         }
     }
 
@@ -682,16 +857,20 @@ public class GameManger : MonoBehaviour
         if (PlayerType == "White"){
             foreach (Stack<Player> s in playerList){
                 if (s.Count > 0){
-                    if (s.Peek().indexTriangle > 6 && s.Peek().PlayerType == PlayerType)
+                    if(s.Peek().indexTriangle != -1){
+                        if (s.Peek().indexTriangle > 6 && s.Peek().PlayerType == PlayerType)
                         return false;
+                    }
                 }
             }
             return true;
         }else{
             foreach (Stack<Player> s in playerList){
                 if (s.Count > 0){
-                    if (s.Peek().indexTriangle < 19 && s.Peek().PlayerType == PlayerType)
-                        return false;
+                    if (s.Peek().indexTriangle != -1){
+                        if (s.Peek().indexTriangle < 19 && s.Peek().PlayerType == PlayerType)
+                            return false;
+                    }
                 }
             }
             return true;
