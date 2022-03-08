@@ -28,19 +28,25 @@ public class Triangle : MonoBehaviour
         gameManager = FindObjectOfType<GameManger>();
         location = new Vector3[LocationMaxPlayers];
         int indexStart = 0;
-        int i;
-        for (int J = 1; J <= 3; J++){
-            for (i = indexStart; i < LocationMaxPlayers - (3 - J) * 5; i++){
-                if (i == 0)
+
+
+
+        for(int j = 1; j <=5; j++)
+        {
+            for (int z = 0; z <= 5 - j; z++)
+            {
+                if (z == 0 && j == 1)
                     location[0] = firstLocation;
-                else{
-                    if(TriangleIndex < 13)
-                        location[i] = location[0] + ((i % 5) * new Vector3(0, 0, 1.25f)) + (J - 1) * (new Vector3(0, 0.2f, 0));
+                else
+                {
+                    if (TriangleIndex < 13)
+                        location[indexStart + z] = location[0] + (new Vector3(0, 0, 0.5f))*(j-1) +(new Vector3(0, 0, 1.25f) * (z)) + ((j - 1) * (new Vector3(0, 0.2f, 0)));
                     else
-                        location[i] = location[0] - ((i % 5) * new Vector3(0, 0, 1.25f)) + (J - 1) * (new Vector3(0, 0.2f, 0));
+                        location[indexStart + z ] = location[0]- (new Vector3(0, 0, 0.5f)) * (j-1) - (new Vector3(0, 0, 1.25f) * (z)) + ((j - 1) * (new Vector3(0, 0.2f, 0)));
+
                 }
             }
-            indexStart = i;
+            indexStart+= 6 - j;
         }
     }
     /* after the movement according to first/second dice, 
@@ -110,15 +116,17 @@ public class Triangle : MonoBehaviour
                         if (gameManager.GetHighDice() != Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex)){
                             // did the other dice and can't do the second dice (the higher) after , than MessageNeedToPop = true;
                             if (GameManger.PlayerTurn == "Black"){
-                                if (gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle + Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) + gameManager.GetHighDice(), "White") == -1){
-                                    if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count == 1)
-                                        MessageNeedToPop = true;
+                                if (gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle + Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) + gameManager.GetHighDice(), "White") == -1) {
+                                    if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count == 1){
+                                            MessageNeedToPop = true;
+                                    }
                                 }
                             }
                             else{
                                 if (gameManager.CheckCanPutThere(OnSelected.SelectedPlayer.indexTriangle - Math.Abs(OnSelected.SelectedPlayer.indexTriangle - TriangleIndex) - gameManager.GetHighDice(), "Black") == -1){
-                                    if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count == 1)
-                                        MessageNeedToPop = true;
+                                    if (gameManager.BoardGame[OnSelected.SelectedPlayer.indexTriangle - 1].Count == 1){
+                                            MessageNeedToPop = true;
+                                    }
                                 }
                             }
                         }
@@ -128,8 +136,7 @@ public class Triangle : MonoBehaviour
         }
         return MessageNeedToPop;
     }
-        
-    
+         
     /*the function return true if the participent click on triangle for moving his current stone , else didn't click and return false*/
     public bool DidClickOnTriangle() {
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -145,12 +152,12 @@ public class Triangle : MonoBehaviour
         return false;
     }
     
+    //This function should happen when we have one trapped stone. After Replacing it, at need present a message that we can't move accoding to the other dice.
     public void UpdateMoventOnlyOneTrapped()
     {
         gameManager.CanMoveStonesOnBoard = true;
         UpdateRollingOnRelocateTrappedStones();
-        if (!gameManager.SumMovements.IsPlayerDidAllSteps())
-        {
+        if (!gameManager.SumMovements.IsPlayerDidAllSteps()){
             if (!gameManager.ThereIsOptionalMove())
                 gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
         }
@@ -247,8 +254,8 @@ public class Triangle : MonoBehaviour
         }
         // black player put on 0-5 , white player pn 23 - 18 (TriangleIndex)
         gameManager.BoardGame[TriangleIndex - 1].Push(OnSelected.SelectedPlayer); // add to board game
-            OnSelected.SelectedPlayer.transform.localPosition = location[gameManager.BoardGame[TriangleIndex - 1].Count - 1]; // update on board - visual
-        
+        OnSelected.SelectedPlayer.transform.localPosition = location[gameManager.BoardGame[TriangleIndex - 1].Count - 1]; // update on board - visual
+        OnSelected.SelectedPlayer.gameObject.layer = 9;
     }
 
 
@@ -289,50 +296,72 @@ public class Triangle : MonoBehaviour
         }
         // when the dices show double when indexCountMove is 4 than update that the participent rolled according to 2 dices twice. IndexCountMove respresnt count of moves for this current turn.
         else if (gameManager.SumMovements.IsDouble)
-        {
-            switch (gameManager.indexCountMove)
-            {
-                case 0:
-                    if (gameManager.CanMoveStonesOnBoard)
-                        ShowMovementAfterDice(gameManager.DoneMove[1], 0);
-                    else{
-                        gameManager.indexCountMove++;
-                        gameManager.HideAllTriangles();
-                    }
-                    gameManager.DoneMove[0] = true;
-                    gameManager.IndexPutAccordingToDice[0] = -1;
-                    
-                        break;
-                case 1:
-                    if (gameManager.CanMoveStonesOnBoard)
-                        ShowMovementAfterDice(gameManager.DoneMove[2], 0);
-                    else{
-                        gameManager.indexCountMove++;
-                        gameManager.HideAllTriangles();
-                    }
-                    gameManager.DoneMove[1] = true;
-                    gameManager.IndexPutAccordingToDice[1] = -1;
-                    
-                        break;
-                case 2:
-                    if (gameManager.CanMoveStonesOnBoard)
-                        ShowMovementAfterDice(gameManager.DoneMove[3], 0);
-                    else{
-                        gameManager.indexCountMove++;
-                        gameManager.HideAllTriangles();
-                    }
-                    gameManager.DoneMove[2] = true;
-                    gameManager.IndexPutAccordingToDice[2] = -1;
-                    
-                    break;
-                case 3:
-                    gameManager.DoneMove[3] = true;
-                    gameManager.IndexPutAccordingToDice[3] = -1;
-                    gameManager.indexCountMove++;
-                    gameManager.updateAfterFinishTurn();
-                    break;
+            MovementAccordingIndexCountMove();
+    }
+
+    public void MovementAccordingIndexCountMove()
+    {
+        if (gameManager.indexCountMove <= 2){
+            gameManager.DoneMove[gameManager.indexCountMove] = true;
+            gameManager.IndexPutAccordingToDice[gameManager.indexCountMove] = -1;
+            if (gameManager.CanMoveStonesOnBoard)
+                ShowMovementAfterDice(gameManager.DoneMove[gameManager.indexCountMove + 1], 0);
+            else{
+                gameManager.indexCountMove++;
+                gameManager.HideAllTriangles();
             }
+            
+        }else{
+            gameManager.DoneMove[3] = true;
+            gameManager.IndexPutAccordingToDice[3] = -1;
+            gameManager.indexCountMove++;
+            gameManager.updateAfterFinishTurn();
         }
+        //switch (gameManager.indexCountMove)
+        //{
+        //    case 0:
+        //        if (gameManager.CanMoveStonesOnBoard)
+        //            ShowMovementAfterDice(gameManager.DoneMove[1], 0);
+        //        else
+        //        {
+        //            gameManager.indexCountMove++;
+        //            gameManager.HideAllTriangles();
+        //        }
+        //        gameManager.DoneMove[0] = true;
+        //        gameManager.IndexPutAccordingToDice[0] = -1;
+
+        //        break;
+        //    case 1:
+        //        if (gameManager.CanMoveStonesOnBoard)
+        //            ShowMovementAfterDice(gameManager.DoneMove[2], 0);
+        //        else
+        //        {
+        //            gameManager.indexCountMove++;
+        //            gameManager.HideAllTriangles();
+        //        }
+        //        gameManager.DoneMove[1] = true;
+        //        gameManager.IndexPutAccordingToDice[1] = -1;
+
+        //        break;
+        //    case 2:
+        //        if (gameManager.CanMoveStonesOnBoard)
+        //            ShowMovementAfterDice(gameManager.DoneMove[3], 0);
+        //        else
+        //        {
+        //            gameManager.indexCountMove++;
+        //            gameManager.HideAllTriangles();
+        //        }
+        //        gameManager.DoneMove[2] = true;
+        //        gameManager.IndexPutAccordingToDice[2] = -1;
+
+        //        break;
+        //    case 3:
+        //        gameManager.DoneMove[3] = true;
+        //        gameManager.IndexPutAccordingToDice[3] = -1;
+        //        gameManager.indexCountMove++;
+        //        gameManager.updateAfterFinishTurn();
+        //        break;
+        //}
     }
     // function return true if you are in your turn and you don't have stones out of board, else return false
     public bool NoTrappedTypePlayerStones(){
@@ -347,7 +376,6 @@ public class Triangle : MonoBehaviour
                 listTrapped.Remove(p);
                 break;
             }
-
         }
     }
 
@@ -387,7 +415,9 @@ public class Triangle : MonoBehaviour
                 // remove OnSelected functiontality
                 if (removePlayer.Peek().GetComponent<OnSelected>())
                     Destroy(removePlayer.Peek().GetComponent<OnSelected>());
+                removePlayer.Peek().gameObject.layer = 0;
                 currentTrappedList.Add(removePlayer.Pop());
+
             }
         }
     }

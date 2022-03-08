@@ -86,6 +86,7 @@ public class GameManger : MonoBehaviour
     }
     private void Start()
     {
+        Physics.IgnoreLayerCollision(9,10);
         diceSides = Resources.LoadAll<Sprite>("DiceSides/");
         newMaterialSelected = new Material(source);
 
@@ -98,8 +99,7 @@ public class GameManger : MonoBehaviour
 
         LoadingGame();
 
-        for (int boardIndex = 0; boardIndex < BOARD_TRIANGLES; boardIndex++)
-        {
+        for (int boardIndex = 0; boardIndex < BOARD_TRIANGLES; boardIndex++){
             saveFirstLocOfPlayers.Add(new List<Vector3>());
         }
         for (int i = 0; i < BoardGame.Count; i++){
@@ -127,15 +127,18 @@ public class GameManger : MonoBehaviour
         onPlayerWhite.Clear();
         BlackStonesTakeOut.Clear();
         WhiteStonesTakeOut.Clear();
-        for (int i = 0; i < copyBoardGame.Count; i++)
-        {
-            for (int j = 0; j < saveFirstLocOfPlayers[i].Count; j++)
-            {
+        for (int i = 0; i < copyBoardGame.Count; i++){
+            for (int j = 0; j < saveFirstLocOfPlayers[i].Count; j++){
                 // saving location of startLoc of stones
                 copyBoardGame[i].Peek().gameObject.transform.localPosition = saveFirstLocOfPlayers[i][j];
                 usePlayerStack[i].Push(copyBoardGame[i].Pop());
             }
         }
+
+        foreach(Stack<Player> stack in BoardGame){
+            while(stack.Count > 0)
+                stack.Pop();
+            }
 
         // foreach (Stack<Player> Stackp in usePlayerStack){
         for (int z = 0; z < usePlayerStack.Count; z++) {
@@ -169,6 +172,7 @@ public class GameManger : MonoBehaviour
         CanvasVictory.gameObject.SetActive(false);
         RollFirstTime = false;
         GameManger.canRoll = true;
+        panelTurnpass.gameObject.SetActive(false);
 
     }
 
@@ -536,11 +540,11 @@ public class GameManger : MonoBehaviour
 
     public void TakeCareOnNotOnStackAsDice(int i,string PlayerType,Player player)
     {
+        if (!CanvasVictory.gameObject.activeInHierarchy) { 
         int locStart = 0;
         int loc = PlayerType == "Black" ? OnSelected.SelectedPlayer.indexTriangle + dicesCount[i] : OnSelected.SelectedPlayer.indexTriangle - dicesCount[i];
 
-        switch (PlayerType)
-        {
+        switch (PlayerType){
             case "White":
                 locStart = 6;
                 break;
@@ -549,39 +553,38 @@ public class GameManger : MonoBehaviour
                 break;
         }
 
-        if (locStart == 6 || locStart == 19)
-        {
-            if (IsStacksEmptyUntilLocation(dicesCount[i], locStart, PlayerType)){
-                if (OnSelected.SelectedPlayer.indexTriangle == GetLastStackFull(locStart, GameManger.PlayerTurn)){
-                    player.indexDiceToRemove = i;
-                    if (DoneMove[i]){
-                        if (i == 1)
-                            player.indexDiceToRemove = 0;
-                        else
-                            player.indexDiceToRemove = 1;
+            if (locStart == 6 || locStart == 19){
+                if (IsStacksEmptyUntilLocation(dicesCount[i], locStart, PlayerType)){
+                    if (OnSelected.SelectedPlayer.indexTriangle == GetLastStackFull(locStart, GameManger.PlayerTurn)){
+                        player.indexDiceToRemove = i;
+                        if (DoneMove[i]){
+                            if (i == 1)
+                                player.indexDiceToRemove = 0;
+                            else
+                                player.indexDiceToRemove = 1;
+                        }
+                        ToggleHideShowRectangle(true);
+                    }else{
+                        player.indexDiceToRemove = -1;
+                        ToggleHideShowRectangle(false);
                     }
-                    ToggleHideShowRectangle(true);
-                }
-                else{
-                    player.indexDiceToRemove = -1;
-                    ToggleHideShowRectangle(false);
-                }
 
-            }else{
-                // check if there is optional to do move by this dice on all board.
-                // if so - ok. If not, need to check the other dice.
-                // if no dices can be moved - show message pass turn
+                }else{
+                    // check if there is optional to do move by this dice on all board.
+                    // if so - ok. If not, need to check the other dice.
+                    // if no dices can be moved - show message pass turn
 
-                /*TODO - check - what if can remove the other dice without moving*/
+                    /*TODO - check - what if can remove the other dice without moving*/
 
-                if (!ThereIsOptionalMoveByDice(i)){
-                    // if can't move any of dices + can't get them out, than pass turn
-                    if (!ThereIsOptionRemoveOrMove()){
-                        ShowMessagePassTurn = NeedPassTurnMsg();
-                        if (ShowMessagePassTurn){
-                            ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
-                            player.indexDiceToRemove = -1;
-                            ToggleHideShowRectangle(false);
+                    if (!ThereIsOptionalMoveByDice(i)){
+                        // if can't move any of dices + can't get them out, than pass turn
+                        if (!ThereIsOptionRemoveOrMove()){
+                            ShowMessagePassTurn = NeedPassTurnMsg();
+                            if (ShowMessagePassTurn){
+                                ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
+                                player.indexDiceToRemove = -1;
+                                ToggleHideShowRectangle(false);
+                            }
                         }
                     }
                 }
@@ -631,12 +634,10 @@ public class GameManger : MonoBehaviour
 
     public bool ThereIsOptionRemoveOrMove()
     {
-        for (int indexCount = 0; indexCount < dicesCount.Length; indexCount++)
-        {
+        for (int indexCount = 0; indexCount < dicesCount.Length; indexCount++){
             int index = GameManger.PlayerTurn == "White" ? dicesCount[indexCount] : GameManger.BOARD_TRIANGLES - dicesCount[indexCount];
             // if dice count is higher than 0
-            if (dicesCount[indexCount] > 0)
-            {
+            if (dicesCount[indexCount] > 0){
                 if (ThereIsOptionalMoveByDice(indexCount) || BoardGame[index - 1].Count > 0)
                     return true;
             }
@@ -704,11 +705,7 @@ public class GameManger : MonoBehaviour
                         if (BoardGame[indexDices[index]].Peek().PlayerType == GameManger.PlayerTurn) {
                                 ShowMessagePassTurn = false;
                                 break;
-                        }
-
-                        else
-                        {
-                            print("here2");
+                        }else{
                             locStart = GameManger.PlayerTurn == "White" ? 6 : 19;
                             TriangleCount = GameManger.PlayerTurn == "White" ? diceCount : BOARD_TRIANGLES - diceCount + 1;
                             // check if there is an optional to remove some stone by taking out the last stone in last stack
@@ -721,8 +718,6 @@ public class GameManger : MonoBehaviour
                             }
                         }
                     }else{
-                        print("here");
-                        // TODO- check!
                         locStart = GameManger.PlayerTurn == "White" ? 6 : 19;
                         TriangleCount = GameManger.PlayerTurn == "White" ? diceCount : BOARD_TRIANGLES - diceCount + 1;
                         // check if there is an optional to remove some stone by taking out the last stone in last stack

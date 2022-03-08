@@ -143,12 +143,14 @@ public class Dice : MonoBehaviour
                                             gameManager.ShowMessagePassTurn = false;
                                             break;
                                         }else{
-                                            gameManager.TakeCareOnNotOnStackAsDice(indexDice, OnSelected.SelectedPlayer.PlayerType, OnSelected.SelectedPlayer);
+                                            if (OnSelected.SelectedPlayer != null)
+                                                gameManager.TakeCareOnNotOnStackAsDice(indexDice, OnSelected.SelectedPlayer.PlayerType, OnSelected.SelectedPlayer);
                                             if (gameManager.RectanglesShowTakeOut[0].activeInHierarchy || gameManager.RectanglesShowTakeOut[1].activeInHierarchy)
                                                 break;
                                         }
                                     }else{
-                                        gameManager.TakeCareOnNotOnStackAsDice(indexDice, OnSelected.SelectedPlayer.PlayerType, OnSelected.SelectedPlayer);
+                                        if(OnSelected.SelectedPlayer !=null)
+                                            gameManager.TakeCareOnNotOnStackAsDice(indexDice, OnSelected.SelectedPlayer.PlayerType, OnSelected.SelectedPlayer);
                                         if (gameManager.RectanglesShowTakeOut[0].activeInHierarchy || gameManager.RectanglesShowTakeOut[1].activeInHierarchy)
                                             break;
                                     }

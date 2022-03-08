@@ -15,12 +15,10 @@ public class Player : MonoBehaviour
     public int indexDiceToRemove;
     int index;
 
-    private void Start()
-    {
+    private void Start(){
         gameManager = FindObjectOfType<GameManger>();
     }
-    private void OnMouseDown()
-    {
+    private void OnMouseDown(){
     if (CanClickOnStone()){
         if (hasTrappedStones()){
             if (ChooseToSelect()) UpdateListenersOnSelect();
@@ -31,8 +29,7 @@ public class Player : MonoBehaviour
     }
 }
 
-    public bool CanClickOnStone()
-    {
+    public bool CanClickOnStone(){
         if (IsParticipentClickOnStone()){
             if (IsThisMyTurn()){
                 if (NotDoneYetAllDices())
@@ -89,8 +86,7 @@ public class Player : MonoBehaviour
     }
 
     // this function get called on deslect trapped stones
-    public void OnDeselectTrappedStone()
-    {
+    public void OnDeselectTrappedStone(){
         OnSelected.OnChosingMove -= gameManager.ChangeColorToCurrentPlayer;
         ChangeBackToNormal();
         GameManger.LastSelected = null;
@@ -99,8 +95,7 @@ public class Player : MonoBehaviour
     }
 
 
-    public void UpdateListenersOnSelect()
-    {
+    public void UpdateListenersOnSelect(){
         // if one of dices or both are 0 mean finishTurn (Did all steps/ pass turn by some reason)
         if (gameManager.dices[0].diceCount != 0 && gameManager.dices[1].diceCount != 0){
             gameManager.EnableChosingPlayer(gameManager.BoardGame[indexTriangle - 1]);
@@ -250,7 +245,6 @@ public class Player : MonoBehaviour
                 if (gameManager.BoardGame[i - 1].Count > 0){
                     if (gameManager.BoardGame[i - 1].Peek().PlayerType == PlayerType)
                         return false;
-
                 }
             }
         }

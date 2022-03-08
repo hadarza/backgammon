@@ -13,7 +13,6 @@ public class rectangleTakeOutStones : MonoBehaviour
         gameManager = FindObjectOfType<GameManger>();
     }
 
-
     /*the function return true if the participent click on triangle for moving his current stone , else didn't click and return false*/
     public bool DidClickOnRectangle()
     {
@@ -67,6 +66,7 @@ public class rectangleTakeOutStones : MonoBehaviour
     }
 
     public void ResetSelected() {
+        OnSelected.SelectedPlayer.gameObject.GetComponent<Renderer>().material = gameManager.NormalColor; // change color matriel to normal
         OnSelected.SelectedPlayer.indexTriangle = -1; // not on board anymore
         OnSelected.SelectedPlayer = null;
     }
@@ -102,10 +102,7 @@ public class rectangleTakeOutStones : MonoBehaviour
                         gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אף אבן ולכן התור עובר ליריב");
                 }
                 else
-                {
-                    print("never happen");
                     gameManager.ShowErrorPassTurn("אין ביכולתך להזיז אבנים לפי הקוביות הנתונות ולכן התור עובר ליריב");
-                }
             }
         }
     }

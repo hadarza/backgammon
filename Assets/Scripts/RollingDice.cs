@@ -49,15 +49,12 @@ public class RollingDice : MonoBehaviour
                     break;
                 case "White":
                     dices[indexDice].transform.position = startPos[0]+ indexDice * new Vector3(5,0,0);
-                    print(dices[indexDice].transform.position);
                     force = new Vector3(40, 0, 200);
                     MoveDice(indexDice);
                     break;
                 case "Black":
                     dices[indexDice].transform.position = startPos[1] + indexDice * new Vector3(5, 0, 0);
-                    print(dices[indexDice].transform.position);
                     force = new Vector3(40, 0, -200);
-                    
                     MoveDice(indexDice);
                     break;
                 default:
