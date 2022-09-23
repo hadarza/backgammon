@@ -22,7 +22,3 @@ Given the current state of the board, a roll of the dice, and the current player
 ![image](https://user-images.githubusercontent.com/48456834/191960203-5d2d3804-c39e-426b-bbc2-bd85a4950870.png)
 
 
-
-# Open Project
-
-See the project by open build/Backgammon
